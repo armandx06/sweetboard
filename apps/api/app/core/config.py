@@ -15,4 +15,4 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_host_port}/{self.postgres_db}"
 
 
-settings = Settings()  # type: ignore
+settings = Settings()  # type: ignore[call-arg]
