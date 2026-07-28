@@ -16,4 +16,4 @@ class HealthResponse(BaseModel):
 @app.get("/health")
 async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
     result = await db.execute(text("SELECT 1"))
-    return HealthResponse(status="ok", db_result=result.scalar())
+    return HealthResponse(status="ok", db_result=result.scalar_one())
