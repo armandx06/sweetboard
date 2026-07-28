@@ -1,8 +1,8 @@
 # ADR 0001: Using PostgreSQL in Docker for the Development Environment
 
-## Status
-
-Accepted
+- **Status:** Accepted
+- **Date:** 2026-07-26
+- **Decider:** Jorge Armando Ceras Cárdenas - [armandx06](https://github.com/armandx06)
 
 ## Context
 
@@ -20,3 +20,7 @@ The official postgres:18-alpine image is used, run via Docker Compose, with data
 - Data persists across container restarts thanks to the volume.
 - Docker must be installed as the only external dependency.
 - The host port and credentials are managed via environment variables (.env), never hardcoded in the Compose file, see the [.env.example](../../.env.example) file for an example.
+
+---
+
+Made by [armandx06](https://github.com/armandx06) at July 26, 2026
