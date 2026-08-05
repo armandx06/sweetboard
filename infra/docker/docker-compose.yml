@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_HOST_PORT}:5432"
+      - "${POSTGRES_HOST_PORT}:${POSTGRES_INTERNAL_PORT}"
     volumes:
       - sweetboard_pgdata:/var/lib/postgresql
     healthcheck:
@@ -16,6 +16,28 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  api:
+    build:
+      context: apps/api
+      dockerfile: Dockerfile
+    container_name: sweetboard-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_INTERNAL_PORT: ${POSTGRES_INTERNAL_PORT}
+    ports:
+      - "${API_HOST_PORT}:${API_INTERNAL_PORT}"
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
+    volumes:
+      - ./apps/api/app:/app/app
+      - ./apps/api/alembic:/app/alembic
 
 volumes:
   sweetboard_pgdata:
