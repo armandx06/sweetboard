@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,6 +9,7 @@ class Settings(BaseSettings):
     postgres_db: str
     postgres_host: str = "db"
     postgres_internal_port: int = 5432
+    allowed_origins: Sequence[str]
 
     model_config = SettingsConfigDict(env_file="../../.env", extra="ignore")
 
