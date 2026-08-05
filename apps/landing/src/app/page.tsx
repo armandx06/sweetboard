@@ -1,3 +1,10 @@
+import Link from "next/link";
+
 export default function Home() {
-  return <h1>Hello world</h1>;
+  return (
+    <main>
+      <h1>Health check</h1>
+      <Link href="/health">Check health</Link>
+    </main>
+  );
 }
