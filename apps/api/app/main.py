@@ -1,11 +1,20 @@
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.db.session import get_db
 
 app = FastAPI(title="Sweetboard API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class HealthResponse(BaseModel):
