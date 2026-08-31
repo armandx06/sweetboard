@@ -1,5 +1,12 @@
 {
   "name": "sweetboard",
   "private": true,
-  "packageManager": "pnpm@11.20.0"
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev:infra": "docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.dev.yml --project-directory . up -d",
+    "dev:infra:down": "docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.dev.yml --project-directory . down",
+    "dev:infra:reset": "docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.dev.yml --project-directory . down -v",
+    "dev:infra:logs": "docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.dev.yml --project-directory . logs -f",
+    "dev:infra:ps": "docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.dev.yml --project-directory . ps"
+  }
 }

@@ -1,0 +1,9 @@
+services:
+  chartdb:
+    image: ghcr.io/chartdb/chartdb:latest
+    container_name: sweetboard-chartdb-dev
+    restart: unless-stopped
+    ports:
+      - "${CHARTDB_HOST_PORT}:${CHARTDB_INTERNAL_PORT}"
+    environment:
+      DISABLE_ANALITICS: "true"
