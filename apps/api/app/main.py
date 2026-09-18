@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
+from app.routers.employee import router as employee_router
 
 app = FastAPI(title="Sweetboard API")
 
@@ -26,3 +27,6 @@ class HealthResponse(BaseModel):
 async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
     result = await db.execute(text("SELECT 1"))
     return HealthResponse(status="ok", db_result=result.scalar_one())
+
+
+app.include_router(employee_router)
