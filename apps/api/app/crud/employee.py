@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import generate_password, hash_password
@@ -27,7 +28,11 @@ async def create_employee(
 
     employee = Employee(**data.model_dump())
     db.add(employee)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise
     await db.refresh(employee)
     return EmployeeCreateResponse(
         **employee.__dict__, temporary_password=plain_password
