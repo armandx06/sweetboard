@@ -18,6 +18,4 @@ def generate_password(char_quantity: int = 12) -> str:
     if char_quantity < 12:
         raise ValueError("Password quantity must be at least 12 characters")
     characters = string.ascii_letters + string.digits + string.punctuation
-    return hash_password(
-        "".join(secrets.choice(characters) for _ in range(char_quantity))
-    )
+    return "".join(secrets.choice(characters) for _ in range(char_quantity))
