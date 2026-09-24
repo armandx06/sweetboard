@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import employee as crud_employee
@@ -12,7 +13,13 @@ router = APIRouter(prefix="/employees", tags=["Employees"])
 
 @router.post("", response_model=EmployeeCreateResponse, status_code=201)
 async def create_employee(data: EmployeeCreate, db: AsyncSession = Depends(get_db)):
-    return await crud_employee.create_employee(db, data)
+    try:
+        return await crud_employee.create_employee(db, data)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=409,
+            detail="A unique username could not be generated. Please try again.",
+        )
 
 
 @router.get("/{employee_id}", response_model=EmployeeRead)
