@@ -17,7 +17,6 @@ class EmployeeRead(BaseModel):
 
     id: UUID
     username: str
-    password: str
     first_name: str
     last_name: str
     birth_date: date
