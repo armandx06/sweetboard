@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 class EmployeeCreate(BaseModel):
     username: str | None = None
-    password: str
+    password: str | None = None
     first_name: str
     last_name: str
     birth_date: date
@@ -19,6 +19,7 @@ class EmployeeRead(BaseModel):
 
     id: UUID
     username: str
+    password: str
     first_name: str
     last_name: str
     birth_date: datetime
@@ -31,3 +32,7 @@ class EmployeeRead(BaseModel):
     last_password_change_at: datetime | None
     created_at: datetime
     updated_at: datetime | None
+
+
+class EmployeeCreateResponse(EmployeeRead):
+    temporary_password: str
