@@ -3,12 +3,14 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import generate_password
+from app.core.security import generate_password, hash_password
 from app.models.employee import Employee
-from app.schemas.employee import EmployeeCreate
+from app.schemas.employee import EmployeeCreate, EmployeeCreateResponse
 
 
-async def create_employee(db: AsyncSession, data: EmployeeCreate) -> Employee:
+async def create_employee(
+    db: AsyncSession, data: EmployeeCreate
+) -> EmployeeCreateResponse:
     data.first_name = data.first_name.strip().title()
     data.last_name = data.last_name.strip().title()
     data.phone_number = data.phone_number.strip()
@@ -19,13 +21,17 @@ async def create_employee(db: AsyncSession, data: EmployeeCreate) -> Employee:
     result = await db.execute(stmt)
     i = result.scalar() or 0
     data.username = f"{user}{i + 1:02d}".upper()
-    data.password = generate_password()
+    plain_password = generate_password()
+    hashed_password = hash_password(plain_password)
+    data.password = hashed_password
 
     employee = Employee(**data.model_dump())
     db.add(employee)
     await db.commit()
     await db.refresh(employee)
-    return employee
+    return EmployeeCreateResponse(
+        **employee.__dict__, temporary_password=plain_password
+    )
 
 
 async def get_employee(db: AsyncSession, employee_id: UUID) -> Employee | None:
