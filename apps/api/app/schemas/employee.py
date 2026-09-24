@@ -5,8 +5,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class EmployeeCreate(BaseModel):
-    username: str | None = None
-    password: str | None = None
     first_name: str
     last_name: str
     birth_date: date
@@ -22,7 +20,7 @@ class EmployeeRead(BaseModel):
     password: str
     first_name: str
     last_name: str
-    birth_date: datetime
+    birth_date: date
     phone_number: str
     email: str | None
     hire_date: date | None
