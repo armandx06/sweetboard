@@ -17,16 +17,23 @@ async def create_employee(
     data.phone_number = data.phone_number.strip()
     data.email = data.email.strip().lower() if data.email else None
 
-    user = f"{data.first_name[:2]}{data.last_name[:2]}{data.birth_date.strftime('%y')}"
+    user = f"{data.first_name[:2]}{data.last_name[:2]}{data.birth_date.strftime('%y')}".upper()
     stmt = select(func.count(Employee.id)).where(Employee.username.like(f"{user}%"))
     result = await db.execute(stmt)
     i = result.scalar() or 0
-    data.username = f"{user}{i + 1:02d}".upper()
+    username = f"{user}{i + 1:02d}"
     plain_password = generate_password()
     hashed_password = hash_password(plain_password)
-    data.password = hashed_password
 
-    employee = Employee(**data.model_dump())
+    employee = Employee(
+        username=username,
+        password=hashed_password,
+        first_name=data.first_name,
+        last_name=data.last_name,
+        birth_date=data.birth_date,
+        phone_number=data.phone_number,
+        email=data.email,
+    )
     db.add(employee)
     try:
         await db.commit()
