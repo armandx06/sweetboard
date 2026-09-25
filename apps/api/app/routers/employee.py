@@ -18,7 +18,7 @@ async def create_employee(data: EmployeeCreate, db: AsyncSession = Depends(get_d
     except IntegrityError:
         raise HTTPException(
             status_code=409,
-            detail="A unique username could not be generated. Please try again.",
+            detail="An unexpected error has occurred, please try again.",
         )
 
 
