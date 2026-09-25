@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
+from app.exceptions.handlers import register_exception_handlers
 from app.routers.employee import router as employee_router
 
 app = FastAPI(title="Sweetboard API")
@@ -28,5 +29,7 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
     result = await db.execute(text("SELECT 1"))
     return HealthResponse(status="ok", db_result=result.scalar_one())
 
+
+register_exception_handlers(app)
 
 app.include_router(employee_router)
