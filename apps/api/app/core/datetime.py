@@ -6,4 +6,4 @@ def now() -> datetime:
 
 
 def today() -> date:
-    return datetime.now(UTC).today()
+    return datetime.now(UTC).date()
