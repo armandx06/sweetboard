@@ -70,6 +70,6 @@ async def reset_password(employee_id: UUID, db: AsyncSession = Depends(get_db)):
     return PasswordResetResponse(temporary_password=plain_password)
 
 
-@router.delete("/{employee_id}", response_model=EmployeeRead)
+@router.delete("/{employee_id}", status_code=204)
 async def delete_employee(employee_id: UUID, db: AsyncSession = Depends(get_db)):
     await crud_employee.delete_employee(db, employee_id)

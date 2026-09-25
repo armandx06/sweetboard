@@ -54,7 +54,6 @@ async def create_employee(
     db.add(employee)
 
     await db.commit()
-    await db.rollback()
     await db.refresh(employee)
 
     return EmployeeCreateResponse(
