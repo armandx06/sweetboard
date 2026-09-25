@@ -16,7 +16,8 @@ async def core_api_exception_handler(_: Request, exc: Exception) -> JSONResponse
 async def integrity_error_handler(_: Request, exc: Exception) -> JSONResponse:
     if isinstance(exc, IntegrityError):
         return JSONResponse(
-            status_code=400, content={"detail": "Data integrity violation"}
+            status_code=409,
+            content={"detail": "An unexpected error has occurred, please try again."},
         )
     return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
 

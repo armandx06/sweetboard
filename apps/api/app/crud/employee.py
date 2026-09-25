@@ -2,12 +2,11 @@ from datetime import date
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.datetime import now, today
 from app.core.security import generate_password, hash_password
-from app.exceptions.exceptions import InactiveEmployee
+from app.exceptions.exceptions import EmployeeNotFound, InactiveEmployee
 from app.models.employee import Employee
 from app.schemas.employee import (
     EmployeeCreate,
@@ -21,7 +20,7 @@ async def create_username(
 ) -> str:
     user = f"{first_name[:2]}{last_name[:2]}{birth_date.strftime('%y')}".upper()
 
-    stmt = select(func.count(Employee.id)).where(Employee.username == user)
+    stmt = select(func.count(Employee.id)).where(Employee.username.like(f"{user}%"))
     result = await db.execute(stmt)
     i = result.scalar() or 0
     user = f"{user}{i + 1:02d}"
@@ -53,21 +52,25 @@ async def create_employee(
         email=data.email,
     )
     db.add(employee)
-    try:
-        await db.commit()
-    except IntegrityError:
-        await db.rollback()
-        raise
+
+    await db.commit()
+    await db.rollback()
     await db.refresh(employee)
+
     return EmployeeCreateResponse(
         **employee.__dict__, temporary_password=plain_password
     )
 
 
-async def get_employee(db: AsyncSession, employee_id: UUID) -> Employee | None:
+async def get_employee(db: AsyncSession, employee_id: UUID) -> Employee:
     stmt = select(Employee).where(Employee.id == employee_id)
     result = await db.execute(stmt)
-    return result.scalar_one_or_none()
+    employee = result.scalar_one_or_none()
+
+    if employee is None:
+        raise EmployeeNotFound
+
+    return employee
 
 
 async def list_employees(
@@ -77,15 +80,14 @@ async def list_employees(
     if not include_inactive:
         stmt = stmt.where(Employee.active.is_(True))
     result = await db.execute(stmt)
+
     return list(result.scalars().all())
 
 
 async def update_employee(
     db: AsyncSession, employee_id: UUID, data: EmployeeUpdate
-) -> Employee | None:
+) -> Employee:
     employee = await get_employee(db, employee_id)
-    if employee is None:
-        return None
 
     update_data = data.model_dump(exclude_unset=True)
     if "first_name" in update_data:
@@ -111,47 +113,57 @@ async def update_employee(
 
     await db.commit()
     await db.refresh(employee)
+
     return employee
 
 
 async def deactivate_employee(
     db: AsyncSession, employee_id: UUID, termination_date: date | None = None
-) -> Employee | None:
+) -> Employee:
     employee = await get_employee(db, employee_id)
-    if employee is None:
-        return None
+
     if employee.hire_date is None:
         raise InactiveEmployee
+
     employee.active = False
     employee.termination_date = termination_date or today()
+
     await db.commit()
     await db.refresh(employee)
+
     return employee
 
 
 async def activate_employee(
     db: AsyncSession, employee_id: UUID, hire_date: date | None = None
-) -> Employee | None:
+) -> Employee:
     employee = await get_employee(db, employee_id)
-    if employee is None:
-        return None
+
     employee.active = True
     employee.hire_date = hire_date or today()
     employee.termination_date = None
+
     await db.commit()
     await db.refresh(employee)
+
     return employee
 
 
-async def reset_employee_password(
-    db: AsyncSession, employee_id: UUID
-) -> tuple[Employee, str] | None:
+async def reset_employee_password(db: AsyncSession, employee_id: UUID) -> str:
     employee = await get_employee(db, employee_id)
-    if employee is None:
-        return None
+
     plain_password = generate_password()
     employee.password = hash_password(plain_password)
     employee.last_password_change_at = now()
+
     await db.commit()
     await db.refresh(employee)
-    return employee, plain_password
+
+    return plain_password
+
+
+async def delete_employee(db: AsyncSession, employee_id: UUID) -> None:
+    employee = await get_employee(db, employee_id)
+
+    await db.delete(employee)
+    await db.commit()

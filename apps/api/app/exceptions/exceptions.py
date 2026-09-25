@@ -12,3 +12,8 @@ class InactiveEmployee(APIException):
         self, message: str = "Employee is inactive or has not yet been hired."
     ):
         super().__init__(message, 400)
+
+
+class EmployeeNotFound(APIException):
+    def __init__(self, message: str = "Employee not found"):
+        super().__init__(message, 404)
