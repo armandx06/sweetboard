@@ -23,9 +23,16 @@ async def test_create_employee(client: AsyncClient):
     )
 
     assert response.status_code == 201
-    assert response.json()["username"].startswith("JODO90")
     assert response.json()["first_name"] == "John"
     assert response.json()["last_name"] == "Doe"
     assert response.json()["birth_date"] == "1990-01-01"
     assert response.json()["phone_number"] == "3312345678"
+    assert response.json()["username"].startswith("JODO90")
     assert response.json()["email"] == "john.doe@example.com"
+    assert response.json()["hire_date"] is None
+    assert response.json()["termination_date"] is None
+    assert response.json()["active"] is False
+    assert response.json()["last_login_at"] is None
+    assert response.json()["created_at"] is not None
+    assert response.json()["updated_at"] is None
+    assert response.json()["temporary_password"] is not None
