@@ -1,5 +1,7 @@
 import os
 
+from sqlalchemy.orm import Session, SessionTransaction
+
 os.environ.setdefault("POSTGRES_HOST", "localhost")
 
 from collections.abc import AsyncGenerator
@@ -25,7 +27,9 @@ async def db_session() -> AsyncGenerator[AsyncSession]:
         await connection.begin_nested()
 
         @event.listens_for(session.sync_session, "after_transaction_end")
-        def restart_savepoint() -> None:
+        def restart_savepoint(
+            _sync_session: Session, _transaction: SessionTransaction
+        ) -> None:
             sync_connection = connection.sync_connection
             if (
                 sync_connection is not None
