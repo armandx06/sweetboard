@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 
 from httpx import AsyncClient
@@ -35,3 +36,15 @@ async def test_create_employee(client: AsyncClient):
     assert response.json()["created_at"] is not None
     assert response.json()["updated_at"] is None
     assert response.json()["temporary_password"] is not None
+
+
+async def test_create_employee_race_condition(concurrent_client: AsyncClient):
+    results = await asyncio.gather(
+        concurrent_client.post("/employees", json=JOHN_DOE_PAYLOAD),
+        concurrent_client.post("/employees", json=JOHN_DOE_PAYLOAD),
+    )
+
+    status_codes = [result.status_code for result in results]
+
+    assert any(status == 201 for status in status_codes)
+    assert any(status == 409 for status in status_codes)
