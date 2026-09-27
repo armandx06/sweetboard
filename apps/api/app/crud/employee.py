@@ -116,23 +116,6 @@ async def update_employee(
     return employee
 
 
-async def deactivate_employee(
-    db: AsyncSession, employee_id: UUID, termination_date: date | None = None
-) -> Employee:
-    employee = await get_employee(db, employee_id)
-
-    if employee.hire_date is None:
-        raise InactiveEmployee
-
-    employee.active = False
-    employee.termination_date = termination_date or today()
-
-    await db.commit()
-    await db.refresh(employee)
-
-    return employee
-
-
 async def activate_employee(
     db: AsyncSession, employee_id: UUID, hire_date: date | None = None
 ) -> Employee:
@@ -144,6 +127,23 @@ async def activate_employee(
     employee.active = True
     employee.hire_date = hire_date or today()
     employee.termination_date = None
+
+    await db.commit()
+    await db.refresh(employee)
+
+    return employee
+
+
+async def deactivate_employee(
+    db: AsyncSession, employee_id: UUID, termination_date: date | None = None
+) -> Employee:
+    employee = await get_employee(db, employee_id)
+
+    if employee.hire_date is None:
+        raise InactiveEmployee
+
+    employee.active = False
+    employee.termination_date = termination_date or today()
 
     await db.commit()
     await db.refresh(employee)
