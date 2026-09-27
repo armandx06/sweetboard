@@ -1,24 +1,22 @@
 import os
 
-from alembic.config import Config
-from sqlalchemy.orm import Session, SessionTransaction
-
-from alembic import command
-from app.models.base import Base
-
 os.environ.setdefault("POSTGRES_HOST", "localhost")
 os.environ.setdefault("POSTGRES_TESTDB_HOST", "localhost")
 
 from collections.abc import AsyncGenerator
 
 import pytest
+from alembic.config import Config
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.orm import Session, SessionTransaction
 
+from alembic import command
 from app.core.config import settings
 from app.db.session import get_db, get_test_db, test_engine
 from app.main import app
+from app.models.base import Base
 
 
 @pytest.fixture
