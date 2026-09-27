@@ -2,6 +2,7 @@ import os
 
 os.environ.setdefault("POSTGRES_HOST", "localhost")
 os.environ.setdefault("POSTGRES_TESTDB_HOST", "localhost")
+os.environ.setdefault("POSTGRES_TESTDB_INTERNAL_PORT", "5433")
 
 from collections.abc import AsyncGenerator
 
@@ -64,7 +65,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
 
 def _run_test_migrations() -> None:
     alembic_cfg = Config("alembic.ini")
-    alembic_cfg.set_main_option("sqlalchemy.url", settings.test_database_url)
+    alembic_cfg.attributes["sqlalchemy_url_override"] = settings.test_database_url
     command.upgrade(alembic_cfg, "head")
 
 
