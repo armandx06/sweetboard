@@ -5,9 +5,10 @@ from sqlalchemy import DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
+from app.models.mixins import TimestampMixin
 
 
-class Employee(Base):
+class Employee(Base, TimestampMixin):
     __tablename__ = "employees"
 
     id: Mapped[UUID] = mapped_column(
@@ -26,10 +27,4 @@ class Employee(Base):
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_password_change_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True)
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), onupdate=func.now()
     )
