@@ -2,6 +2,14 @@ import uuid
 
 from httpx import AsyncClient
 
+JOHN_DOE_PAYLOAD = {
+    "first_name": "John",
+    "last_name": "Doe",
+    "birth_date": "1990-01-01",
+    "phone_number": "3312345678",
+    "email": "john.doe@example.com",
+}
+
 
 async def test_get_employee_not_found(client: AsyncClient):
     response = await client.get(f"/employees/{uuid.uuid4()}")
@@ -11,16 +19,7 @@ async def test_get_employee_not_found(client: AsyncClient):
 
 
 async def test_create_employee(client: AsyncClient):
-    response = await client.post(
-        "/employees",
-        json={
-            "first_name": "John",
-            "last_name": "Doe",
-            "birth_date": "1990-01-01",
-            "phone_number": "3312345678",
-            "email": "john.doe@example.com",
-        },
-    )
+    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
 
     assert response.status_code == 201
     assert response.json()["first_name"] == "John"
