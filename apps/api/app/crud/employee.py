@@ -138,6 +138,9 @@ async def activate_employee(
 ) -> Employee:
     employee = await get_employee(db, employee_id)
 
+    if employee.active:
+        return employee
+
     employee.active = True
     employee.hire_date = hire_date or today()
     employee.termination_date = None
