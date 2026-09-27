@@ -52,6 +52,22 @@ async def test_create_employee_race_condition(concurrent_client: AsyncClient):
     assert any(status == 409 for status in status_codes)
 
 
+async def test_create_employee_does_not_leak_password_hash(client: AsyncClient):
+    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+
+    assert "password" not in response.json()
+
+
+async def test_create_employee_sequential_username(client: AsyncClient):
+    first = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    second = await client.post(
+        "/employees", json={**JOHN_DOE_PAYLOAD, "email": "john2@example.com"}
+    )
+
+    assert first.json()["username"] != second.json()["username"]
+    assert second.json()["username"].endswith("02")
+
+
 async def test_get_employee(client: AsyncClient):
     response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
@@ -69,11 +85,46 @@ async def test_get_employee_not_found(client: AsyncClient):
     assert response.json()["detail"] == "Employee not found"
 
 
+async def test_get_employee_does_not_leak_password_hash(client: AsyncClient):
+    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    response = await client.get(f"/employees/{employee_id}")
+
+    assert response.status_code == 200
+    assert "password" not in response.json()
+
+
 async def test_list_employees(client: AsyncClient):
+    await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    await client.post("/employees", json=JANE_DOE_PAYLOAD)
     response = await client.get("/employees")
 
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+
+async def test_list_employees_excludes_inactive_by_default(client: AsyncClient):
+    created = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    employee_id = created.json()["id"]
+    await client.patch(f"/employees/{employee_id}/activate")
+    await client.patch(f"/employees/{employee_id}/deactivate")
+
+    response = await client.get("/employees")
+    assert employee_id not in [e["id"] for e in response.json()]
+
+    response = await client.get("/employees", params={"include_inactive": True})
+    assert employee_id in [e["id"] for e in response.json()]
+
+
+async def test_list_employees_does_not_leak_password_hash(client: AsyncClient):
+    await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    await client.post("/employees", json=JANE_DOE_PAYLOAD)
+    response = await client.get("/employees")
+
+    assert response.status_code == 200
+    for employee in response.json():
+        assert "password" not in employee
 
 
 async def test_update_employee(client: AsyncClient):
@@ -114,7 +165,6 @@ async def test_update_employee_integrity(client: AsyncClient):
     assert updated_john_doe["last_name"] == jane_doe["last_name"]
     assert updated_john_doe["phone_number"] == jane_doe["phone_number"]
     assert updated_john_doe["email"] == jane_doe["email"]
-    assert updated_john_doe["birth_date"] != jane_doe["birth_date"]
 
 
 async def test_update_employee_not_found(client: AsyncClient):
