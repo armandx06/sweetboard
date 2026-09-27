@@ -24,7 +24,11 @@ class HealthResponse(BaseModel):
     db_result: int
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    summary="Check the health of the API",
+    description="Verify that the API and database are functioning correctly.",
+)
 async def health_check(db: AsyncSession = Depends(get_db)) -> HealthResponse:
     result = await db.execute(text("SELECT 1"))
     return HealthResponse(status="ok", db_result=result.scalar_one())
