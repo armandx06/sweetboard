@@ -43,7 +43,7 @@ async def get_employee(employee_id: UUID, db: AsyncSession = Depends(get_db)):
     "",
     response_model=list[EmployeeRead],
     summary="List employees",
-    description="Retrieve a list of all employees.",
+    description="Retrieve a list of all employees, including inactive ones if specified.",
 )
 async def list_employees(
     include_inactive: bool = False, db: AsyncSession = Depends(get_db)
@@ -60,8 +60,7 @@ async def list_employees(
 async def update_employee(
     employee_id: UUID, data: EmployeeUpdate, db: AsyncSession = Depends(get_db)
 ):
-    employee = await crud_employee.update_employee(db, employee_id, data)
-    return employee
+    return await crud_employee.update_employee(db, employee_id, data)
 
 
 @router.patch(
@@ -73,8 +72,7 @@ async def update_employee(
 async def activate_employee(
     employee_id: UUID, hire_date: date | None = None, db: AsyncSession = Depends(get_db)
 ):
-    employee = await crud_employee.activate_employee(db, employee_id, hire_date)
-    return employee
+    return await crud_employee.activate_employee(db, employee_id, hire_date)
 
 
 @router.patch(
@@ -88,10 +86,7 @@ async def deactivate_employee(
     termination_date: date | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    employee = await crud_employee.deactivate_employee(
-        db, employee_id, termination_date
-    )
-    return employee
+    return await crud_employee.deactivate_employee(db, employee_id, termination_date)
 
 
 @router.post(
