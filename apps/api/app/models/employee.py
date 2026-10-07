@@ -1,26 +1,20 @@
 from datetime import date, datetime
-from uuid import UUID
 
-from sqlalchemy import DateTime, func
+from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
-from app.models.mixins import TimestampMixin
+from app.models.mixins import (
+    PersonMixin,
+)
 
 
-class Employee(Base, TimestampMixin):
+class Employee(Base, PersonMixin):
     __tablename__ = "employees"
 
-    id: Mapped[UUID] = mapped_column(
-        primary_key=True, server_default=func.gen_random_uuid()
-    )
     username: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str] = mapped_column()
-    first_name: Mapped[str] = mapped_column()
-    last_name: Mapped[str] = mapped_column()
     birth_date: Mapped[date] = mapped_column()
-    phone_number: Mapped[str] = mapped_column()
-    email: Mapped[str | None] = mapped_column()
     hire_date: Mapped[date | None] = mapped_column()
     termination_date: Mapped[date | None] = mapped_column()
     active: Mapped[bool] = mapped_column(default=False)
