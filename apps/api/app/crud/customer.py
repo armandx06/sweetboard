@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.datetime import today
 from app.exceptions.exceptions import (
-    CompanyNameOnIndividualCustomers,
     CustomerNotFound,
     InactiveCustomer,
 )
@@ -68,9 +67,6 @@ async def update_customer(
     customer = await get_customer(db, customer_id)
 
     update_data = data.model_dump(exclude_unset=True)
-
-    if "company_name" in update_data and not customer.is_company:
-        raise CompanyNameOnIndividualCustomers
 
     if "first_name" in update_data:
         update_data["first_name"] = update_data["first_name"].strip().title()
