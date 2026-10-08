@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.datetime import today
 from app.exceptions.exceptions import (
+    ActiveCustomer,
     CustomerNotFound,
     InactiveCustomer,
 )
@@ -99,7 +100,7 @@ async def activate_customer(
     customer = await get_customer(db, customer_id)
 
     if customer.active:
-        return customer
+        raise ActiveCustomer
 
     customer.active = True
     customer.activated_at = activated_at or today()

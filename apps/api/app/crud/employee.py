@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.datetime import now, today
 from app.core.security import generate_password, hash_password
-from app.exceptions.exceptions import EmployeeNotFound, InactiveEmployee
+from app.exceptions.exceptions import ActiveEmployee, EmployeeNotFound, InactiveEmployee
 from app.models.employee import Employee
 from app.schemas.employee import (
     EmployeeCreate,
@@ -122,7 +122,7 @@ async def activate_employee(
     employee = await get_employee(db, employee_id)
 
     if employee.active:
-        return employee
+        raise ActiveEmployee
 
     employee.active = True
     employee.hire_date = hire_date or today()

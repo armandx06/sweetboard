@@ -14,6 +14,11 @@ class InactiveEmployee(APIException):
         super().__init__(message, 400)
 
 
+class ActiveEmployee(APIException):
+    def __init__(self, message: str = "Employee is already active"):
+        super().__init__(message, 400)
+
+
 class EmployeeNotFound(APIException):
     def __init__(self, message: str = "Employee not found"):
         super().__init__(message, 404)
@@ -33,4 +38,9 @@ class CompanyNameOnIndividualCustomers(APIException):
 
 class InactiveCustomer(APIException):
     def __init__(self, message: str = "Customer is inactive"):
+        super().__init__(message, 400)
+
+
+class ActiveCustomer(APIException):
+    def __init__(self, message: str = "Customer is already active"):
         super().__init__(message, 400)
