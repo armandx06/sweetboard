@@ -11,9 +11,6 @@ class CustomerCreate(BaseModel):
     email: str | None = None
     company_name: str | None = None
     is_company: bool = False
-    active: bool = False
-    activated_at: date | None = None
-    deactivated_at: date | None = None
 
 
 class CustomerRead(BaseModel):
@@ -32,6 +29,7 @@ class CustomerRead(BaseModel):
     created_at: datetime
     updated_at: datetime | None
 
+
 class CustomerUpdate(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
@@ -39,6 +37,3 @@ class CustomerUpdate(BaseModel):
     email: str | None = None
     company_name: str | None = None
     is_company: bool | None = None
-    active: bool | None = None
-    activated_at: date | None = None
-    deactivated_at: date | None = None
