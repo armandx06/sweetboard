@@ -19,23 +19,18 @@ from app.db.session import get_db, get_test_db, test_engine
 from app.main import app
 from app.models.base import Base
 
-JOHN_DOE_PAYLOAD: dict[str, str | bool] = {
+JOHN_DOE_PAYLOAD: dict[str, str] = {
     "first_name": "John",
     "last_name": "Doe",
-    "birth_date": "1990-01-01",
     "phone_number": "3312345678",
     "email": "john.doe@example.com",
-    "company_name": "John Doe Inc.",
-    "is_company": True,
 }
 
-JANE_DOE_PAYLOAD: dict[str, str | bool] = {
+JANE_DOE_PAYLOAD: dict[str, str] = {
     "first_name": "Jane",
     "last_name": "Doe",
-    "birth_date": "1990-01-02",
     "phone_number": "3387654321",
     "email": "jane.doe@example.com",
-    "is_company": False,
 }
 
 
