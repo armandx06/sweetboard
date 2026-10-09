@@ -4,9 +4,20 @@ from httpx import AsyncClient
 
 from tests.conftest import JANE_DOE_PAYLOAD, JOHN_DOE_PAYLOAD
 
+CUSTOMER_JOHN_DOE_PAYLOAD: dict[str, str | bool] = {
+    **JOHN_DOE_PAYLOAD,
+    "is_company": True,
+    "company_name": "John Doe Inc.",
+}
+
+CUSTOMER_JANE_DOE_PAYLOAD: dict[str, str | bool] = {
+    **JANE_DOE_PAYLOAD,
+    "is_company": False,
+}
+
 
 async def test_create_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
 
     customer = response.json()
 
@@ -17,10 +28,15 @@ async def test_create_customer(client: AsyncClient):
     assert customer["email"] == "john.doe@example.com"
     assert customer["company_name"] == "John Doe Inc."
     assert customer["is_company"] is True
+    assert customer["active"] is False
+    assert customer["activated_at"] is None
+    assert customer["deactivated_at"] is None
+    assert customer["created_at"] is not None
+    assert customer["updated_at"] is None
 
 
 async def test_get_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.get(f"/customers/{customer_id}")
@@ -43,7 +59,7 @@ async def test_list_customers(client: AsyncClient):
 
 
 async def test_list_customers_excludes_inactive_by_default(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.get("/customers")
@@ -52,9 +68,15 @@ async def test_list_customers_excludes_inactive_by_default(client: AsyncClient):
     response = await client.get("/customers", params={"include_inactive": True})
     assert customer_id in [c["id"] for c in response.json()]
 
+    response = await client.patch(f"/customers/{customer_id}/activate")
+    assert response.json()["active"] is True
+
+    response = await client.get("/customers")
+    assert customer_id in [c["id"] for c in response.json()]
+
 
 async def test_update_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(
@@ -81,7 +103,7 @@ async def test_update_customer(client: AsyncClient):
 
 
 async def test_update_customer_remove_company(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(
@@ -95,16 +117,16 @@ async def test_update_customer_remove_company(client: AsyncClient):
     customer = response.json()
 
     assert response.status_code == 200
-    assert customer["first_name"] == JOHN_DOE_PAYLOAD.get("first_name")
-    assert customer["last_name"] == JOHN_DOE_PAYLOAD.get("last_name")
-    assert customer["phone_number"] == JOHN_DOE_PAYLOAD.get("phone_number")
-    assert customer["email"] == JOHN_DOE_PAYLOAD.get("email")
+    assert customer["first_name"] == CUSTOMER_JOHN_DOE_PAYLOAD.get("first_name")
+    assert customer["last_name"] == CUSTOMER_JOHN_DOE_PAYLOAD.get("last_name")
+    assert customer["phone_number"] == CUSTOMER_JOHN_DOE_PAYLOAD.get("phone_number")
+    assert customer["email"] == CUSTOMER_JOHN_DOE_PAYLOAD.get("email")
     assert customer["company_name"] is None
     assert customer["is_company"] is False
 
 
 async def test_update_customer_add_company(client: AsyncClient):
-    response = await client.post("/customers", json=JANE_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JANE_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(
@@ -118,21 +140,23 @@ async def test_update_customer_add_company(client: AsyncClient):
     customer = response.json()
 
     assert response.status_code == 200
-    assert customer["first_name"] == JANE_DOE_PAYLOAD.get("first_name")
-    assert customer["last_name"] == JANE_DOE_PAYLOAD.get("last_name")
-    assert customer["phone_number"] == JANE_DOE_PAYLOAD.get("phone_number")
-    assert customer["email"] == JANE_DOE_PAYLOAD.get("email")
+    assert customer["first_name"] == CUSTOMER_JANE_DOE_PAYLOAD.get("first_name")
+    assert customer["last_name"] == CUSTOMER_JANE_DOE_PAYLOAD.get("last_name")
+    assert customer["phone_number"] == CUSTOMER_JANE_DOE_PAYLOAD.get("phone_number")
+    assert customer["email"] == CUSTOMER_JANE_DOE_PAYLOAD.get("email")
     assert customer["company_name"] == "Jane Doe Inc."
     assert customer["is_company"] is True
 
 
 async def test_update_customer_not_found(client: AsyncClient):
-    response = await client.patch(f"/customers/{uuid.uuid4()}", json=JOHN_DOE_PAYLOAD)
+    response = await client.patch(
+        f"/customers/{uuid.uuid4()}", json=CUSTOMER_JOHN_DOE_PAYLOAD
+    )
     assert response.status_code == 404
 
 
 async def test_activate_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(f"/customers/{customer_id}/activate")
@@ -147,7 +171,7 @@ async def test_activate_customer(client: AsyncClient):
 
 async def test_activate_customer_activated_at(client: AsyncClient):
     activated_at = "2023-01-01"
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(
@@ -164,7 +188,7 @@ async def test_activate_customer_activated_at(client: AsyncClient):
 
 
 async def test_activate_active_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(f"/customers/{customer_id}/activate")
@@ -181,7 +205,7 @@ async def test_activate_customer_not_found(client: AsyncClient):
 
 
 async def test_deactivate_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(f"/customers/{customer_id}/activate")
@@ -195,7 +219,7 @@ async def test_deactivate_customer(client: AsyncClient):
 
 async def test_deactivate_customer_deactivate_at(client: AsyncClient):
     deactivated_at = "2023-01-01"
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(f"/customers/{customer_id}/activate")
@@ -212,7 +236,7 @@ async def test_deactivate_customer_deactivate_at(client: AsyncClient):
 
 
 async def test_deactivate_inactive_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(f"/customers/{customer_id}/deactivate")
@@ -227,7 +251,7 @@ async def test_deactivate_customer_not_found(client: AsyncClient):
 
 
 async def test_delete_customer(client: AsyncClient):
-    response = await client.post("/customers", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.delete(f"/customers/{customer_id}")

@@ -6,9 +6,19 @@ from httpx import AsyncClient
 
 from tests.conftest import JANE_DOE_PAYLOAD, JOHN_DOE_PAYLOAD
 
+EMPLOYEE_JOHN_DOE_PAYLOAD: dict[str, str] = {
+    **JOHN_DOE_PAYLOAD,
+    "birth_date": "1990-01-01",
+}
+
+EMPLOYEE_JANE_DOE_PAYLOAD: dict[str, str] = {
+    **JANE_DOE_PAYLOAD,
+    "birth_date": "1990-01-02",
+}
+
 
 async def test_create_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
 
     employee = response.json()
 
@@ -30,8 +40,8 @@ async def test_create_employee(client: AsyncClient):
 
 async def test_create_employee_race_condition(concurrent_client: AsyncClient):
     results = await asyncio.gather(
-        concurrent_client.post("/employees", json=JOHN_DOE_PAYLOAD),
-        concurrent_client.post("/employees", json=JOHN_DOE_PAYLOAD),
+        concurrent_client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD),
+        concurrent_client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD),
     )
 
     status_codes = [result.status_code for result in results]
@@ -41,15 +51,15 @@ async def test_create_employee_race_condition(concurrent_client: AsyncClient):
 
 
 async def test_create_employee_does_not_leak_password_hash(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
 
     assert "password" not in response.json()
 
 
 async def test_create_employee_sequential_username(client: AsyncClient):
-    first = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    first = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     second = await client.post(
-        "/employees", json={**JOHN_DOE_PAYLOAD, "email": "john2@example.com"}
+        "/employees", json={**EMPLOYEE_JOHN_DOE_PAYLOAD, "email": "john2@example.com"}
     )
 
     assert first.json()["username"] != second.json()["username"]
@@ -57,7 +67,7 @@ async def test_create_employee_sequential_username(client: AsyncClient):
 
 
 async def test_get_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.get(f"/employees/{employee_id}")
@@ -73,7 +83,7 @@ async def test_get_employee_not_found(client: AsyncClient):
 
 
 async def test_get_employee_does_not_leak_password_hash(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.get(f"/employees/{employee_id}")
@@ -83,8 +93,8 @@ async def test_get_employee_does_not_leak_password_hash(client: AsyncClient):
 
 
 async def test_list_employees(client: AsyncClient):
-    await client.post("/employees", json=JOHN_DOE_PAYLOAD)
-    await client.post("/employees", json=JANE_DOE_PAYLOAD)
+    await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    await client.post("/employees", json=EMPLOYEE_JANE_DOE_PAYLOAD)
     response = await client.get("/employees")
 
     assert response.status_code == 200
@@ -92,7 +102,7 @@ async def test_list_employees(client: AsyncClient):
 
 
 async def test_list_employees_excludes_inactive_by_default(client: AsyncClient):
-    created = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    created = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = created.json()["id"]
 
     response = await client.get("/employees")
@@ -103,8 +113,8 @@ async def test_list_employees_excludes_inactive_by_default(client: AsyncClient):
 
 
 async def test_list_employees_does_not_leak_password_hash(client: AsyncClient):
-    await client.post("/employees", json=JOHN_DOE_PAYLOAD)
-    await client.post("/employees", json=JANE_DOE_PAYLOAD)
+    await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    await client.post("/employees", json=EMPLOYEE_JANE_DOE_PAYLOAD)
     response = await client.get("/employees")
 
     assert response.status_code == 200
@@ -113,10 +123,12 @@ async def test_list_employees_does_not_leak_password_hash(client: AsyncClient):
 
 
 async def test_update_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
-    response = await client.patch(f"/employees/{employee_id}", json=JANE_DOE_PAYLOAD)
+    response = await client.patch(
+        f"/employees/{employee_id}", json=EMPLOYEE_JANE_DOE_PAYLOAD
+    )
 
     employee = response.json()
 
@@ -132,14 +144,16 @@ async def test_update_employee(client: AsyncClient):
 
 
 async def test_update_employee_integrity(client: AsyncClient):
-    john_doe = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
-    jane_doe = await client.post("/employees", json=JANE_DOE_PAYLOAD)
+    john_doe = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    jane_doe = await client.post("/employees", json=EMPLOYEE_JANE_DOE_PAYLOAD)
 
     john_doe, jane_doe = john_doe.json(), jane_doe.json()
 
     employee_id = john_doe["id"]
 
-    response = await client.patch(f"/employees/{employee_id}", json=JANE_DOE_PAYLOAD)
+    response = await client.patch(
+        f"/employees/{employee_id}", json=EMPLOYEE_JANE_DOE_PAYLOAD
+    )
 
     updated_john_doe = response.json()
 
@@ -153,13 +167,15 @@ async def test_update_employee_integrity(client: AsyncClient):
 
 
 async def test_update_employee_not_found(client: AsyncClient):
-    response = await client.patch(f"/employees/{uuid.uuid4()}", json=JANE_DOE_PAYLOAD)
+    response = await client.patch(
+        f"/employees/{uuid.uuid4()}", json=EMPLOYEE_JANE_DOE_PAYLOAD
+    )
 
     assert response.status_code == 404
 
 
 async def test_activate_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.patch(f"/employees/{employee_id}/activate")
@@ -172,7 +188,7 @@ async def test_activate_employee(client: AsyncClient):
 
 async def test_activate_employee_hire_date(client: AsyncClient):
     hire_date = "2023-01-01"
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.patch(
@@ -187,7 +203,7 @@ async def test_activate_employee_hire_date(client: AsyncClient):
 
 
 async def test_activate_active_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.patch(f"/employees/{employee_id}/activate")
@@ -204,7 +220,7 @@ async def test_activate_employee_not_found(client: AsyncClient):
 
 
 async def test_deactivate_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.patch(f"/employees/{employee_id}/activate")
@@ -218,7 +234,7 @@ async def test_deactivate_employee(client: AsyncClient):
 
 async def test_deactivate_employee_termination_date(client: AsyncClient):
     termination_date = "2023-01-01"
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.patch(f"/employees/{employee_id}/activate")
@@ -235,7 +251,7 @@ async def test_deactivate_employee_termination_date(client: AsyncClient):
 
 
 async def test_deactivate_inactive_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.patch(f"/employees/{employee_id}/deactivate")
@@ -250,7 +266,7 @@ async def test_deactivate_employee_not_found(client: AsyncClient):
 
 
 async def test_reset_employee_password(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id, employee_old_password = (
         response.json()["id"],
         response.json()["temporary_password"],
@@ -270,7 +286,7 @@ async def test_reset_employee_password_not_found(client: AsyncClient):
 
 
 async def test_delete_employee(client: AsyncClient):
-    response = await client.post("/employees", json=JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.delete(f"/employees/{employee_id}")
