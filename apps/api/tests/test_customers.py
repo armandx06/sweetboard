@@ -122,6 +122,30 @@ async def test_update_customer(client: AsyncClient):
     assert customer["is_company"] is True
 
 
+async def test_update_customer_normalizes_input(client: AsyncClient):
+    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
+    customer_id = response.json()["id"]
+
+    response = await client.patch(
+        f"/customers/{customer_id}",
+        json={
+            "first_name": "  jOHN ",
+            "last_name": "doe",
+            "phone_number": " 3312345678 ",
+            "email": "  John.Doe@Example.COM ",
+            "company_name": "  ABC Foods  ",
+        },
+    )
+    customer = response.json()
+
+    assert response.status_code == 200
+    assert customer["first_name"] == "John"
+    assert customer["last_name"] == "Doe"
+    assert customer["phone_number"] == "3312345678"
+    assert customer["email"] == "john.doe@example.com"
+    assert customer["company_name"] == "ABC Foods"
+
+
 async def test_update_customer_remove_company(client: AsyncClient):
     response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]

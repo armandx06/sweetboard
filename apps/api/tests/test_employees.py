@@ -163,6 +163,28 @@ async def test_update_employee(client: AsyncClient):
     assert employee["email"] == "jane.doe@example.com"
 
 
+async def test_update_employee_normalizes_input(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    response = await client.patch(
+        f"/employees/{employee_id}",
+        json={
+            "first_name": "  jOHN ",
+            "last_name": "doe",
+            "phone_number": " 3312345678 ",
+            "email": "  John.Doe@Example.COM ",
+        },
+    )
+    employee = response.json()
+
+    assert response.status_code == 200
+    assert employee["first_name"] == "John"
+    assert employee["last_name"] == "Doe"
+    assert employee["phone_number"] == "3312345678"
+    assert employee["email"] == "john.doe@example.com"
+
+
 async def test_update_employee_integrity(client: AsyncClient):
     john_doe = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
     jane_doe = await client.post("/employees", json=EMPLOYEE_JANE_DOE_PAYLOAD)
