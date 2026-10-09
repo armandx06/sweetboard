@@ -28,9 +28,6 @@ async def create_customer(db: AsyncSession, data: CustomerCreate) -> Customer:
         email=data.email,
         company_name=data.company_name,
         is_company=data.is_company,
-        active=data.active,
-        activated_at=data.activated_at,
-        deactivated_at=data.deactivated_at,
     )
     db.add(customer)
 
