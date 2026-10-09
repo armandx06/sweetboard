@@ -4,21 +4,7 @@ from datetime import date
 
 from httpx import AsyncClient
 
-JOHN_DOE_PAYLOAD = {
-    "first_name": "John",
-    "last_name": "Doe",
-    "birth_date": "1990-01-01",
-    "phone_number": "3312345678",
-    "email": "john.doe@example.com",
-}
-
-JANE_DOE_PAYLOAD = {
-    "first_name": "Jane",
-    "last_name": "Doe",
-    "birth_date": "1990-01-02",
-    "phone_number": "3387654321",
-    "email": "jane.doe@example.com",
-}
+from tests.conftest import JANE_DOE_PAYLOAD, JOHN_DOE_PAYLOAD
 
 
 async def test_create_employee(client: AsyncClient):
