@@ -19,7 +19,7 @@ async def create_customer(db: AsyncSession, data: CustomerCreate) -> Customer:
     data.last_name = data.last_name.strip().title()
     data.phone_number = data.phone_number.strip()
     data.email = data.email.strip().lower() if data.email else None
-    data.company_name = data.company_name.strip().title() if data.company_name else None
+    data.company_name = data.company_name.strip() if data.company_name else None
 
     customer = Customer(
         first_name=data.first_name,
@@ -77,9 +77,7 @@ async def update_customer(
         update_data["email"] = email.strip().lower() if email else None
     if "company_name" in update_data:
         update_data["company_name"] = (
-            update_data["company_name"].strip().title()
-            if update_data["company_name"]
-            else None
+            update_data["company_name"].strip() if update_data["company_name"] else None
         )
 
     for field, value in update_data.items():
