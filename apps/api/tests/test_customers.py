@@ -35,6 +35,26 @@ async def test_create_customer(client: AsyncClient):
     assert customer["updated_at"] is None
 
 
+async def test_create_customer_normalizes_input(client: AsyncClient):
+    response = await client.post(
+        "/customers",
+        json={
+            "first_name": "  jOHN ",
+            "last_name": "doe",
+            "phone_number": " 3312345678 ",
+            "email": "  John.Doe@Example.COM ",
+            "company_name": "  ABC Foods  ",
+        },
+    )
+    customer = response.json()
+
+    assert customer["first_name"] == "John"
+    assert customer["last_name"] == "Doe"
+    assert customer["phone_number"] == "3312345678"
+    assert customer["email"] == "john.doe@example.com"
+    assert customer["company_name"] == "ABC Foods"
+
+
 async def test_get_customer(client: AsyncClient):
     response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
     customer_id = response.json()["id"]

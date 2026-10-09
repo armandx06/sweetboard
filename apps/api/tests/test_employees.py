@@ -38,6 +38,26 @@ async def test_create_employee(client: AsyncClient):
     assert employee["temporary_password"] is not None
 
 
+async def test_create_employee_normalizes_input(client: AsyncClient):
+    response = await client.post(
+        "/employees",
+        json={
+            "first_name": "  jOHN ",
+            "last_name": "doe",
+            "birth_date": "1990-01-01",
+            "phone_number": " 3312345678 ",
+            "email": "  John.Doe@Example.COM ",
+        },
+    )
+    employee = response.json()
+
+    assert employee["first_name"] == "John"
+    assert employee["last_name"] == "Doe"
+    assert employee["birth_date"] == "1990-01-01"
+    assert employee["phone_number"] == "3312345678"
+    assert employee["email"] == "john.doe@example.com"
+
+
 async def test_create_employee_race_condition(concurrent_client: AsyncClient):
     results = await asyncio.gather(
         concurrent_client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD),
