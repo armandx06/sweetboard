@@ -164,7 +164,7 @@ async def test_update_employee(client: AsyncClient):
 
 
 async def test_update_employee_normalizes_input(client: AsyncClient):
-    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    response = await client.post("/employees", json=EMPLOYEE_JANE_DOE_PAYLOAD)
     employee_id = response.json()["id"]
 
     response = await client.patch(

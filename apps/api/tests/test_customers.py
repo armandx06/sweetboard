@@ -123,7 +123,7 @@ async def test_update_customer(client: AsyncClient):
 
 
 async def test_update_customer_normalizes_input(client: AsyncClient):
-    response = await client.post("/customers", json=CUSTOMER_JOHN_DOE_PAYLOAD)
+    response = await client.post("/customers", json=CUSTOMER_JANE_DOE_PAYLOAD)
     customer_id = response.json()["id"]
 
     response = await client.patch(
