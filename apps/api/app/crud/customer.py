@@ -11,10 +11,10 @@ from app.exceptions.exceptions import (
     InactiveCustomer,
 )
 from app.models.customer import Customer
-from app.schemas.customer import CustomerCreate, CustomerRead, CustomerUpdate
+from app.schemas.customer import CustomerCreate, CustomerUpdate
 
 
-async def create_customer(db: AsyncSession, data: CustomerCreate) -> CustomerRead:
+async def create_customer(db: AsyncSession, data: CustomerCreate) -> Customer:
     data.first_name = data.first_name.strip().title()
     data.last_name = data.last_name.strip().title()
     data.phone_number = data.phone_number.strip()
@@ -37,7 +37,7 @@ async def create_customer(db: AsyncSession, data: CustomerCreate) -> CustomerRea
     await db.commit()
     await db.refresh(customer)
 
-    return CustomerRead(**customer.__dict__)
+    return customer
 
 
 async def get_customer(db: AsyncSession, customer_id: UUID) -> Customer:
@@ -129,7 +129,7 @@ async def deactivate_customer(
     return customer
 
 
-async def delete_customer(db: AsyncSession, customer_id: UUID):
+async def delete_customer(db: AsyncSession, customer_id: UUID) -> None:
     customer = await get_customer(db, customer_id)
 
     await db.delete(customer)
