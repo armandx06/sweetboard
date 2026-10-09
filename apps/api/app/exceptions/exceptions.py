@@ -29,13 +29,6 @@ class CustomerNotFound(APIException):
         super().__init__(message, 404)
 
 
-class CompanyNameOnIndividualCustomers(APIException):
-    def __init__(
-        self, message: str = "Company name cannot be set for individual customers"
-    ):
-        super().__init__(message, 400)
-
-
 class InactiveCustomer(APIException):
     def __init__(self, message: str = "Customer is inactive"):
         super().__init__(message, 400)
