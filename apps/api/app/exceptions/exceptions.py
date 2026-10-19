@@ -37,3 +37,18 @@ class InactiveCustomer(APIException):
 class ActiveCustomer(APIException):
     def __init__(self, message: str = "Customer is already active"):
         super().__init__(message, 400)
+
+
+class SupplierNotFound(APIException):
+    def __init__(self, message: str = "Supplier not found"):
+        super().__init__(message, 404)
+
+
+class InactiveSupplier(APIException):
+    def __init__(self, message: str = "Supplier is inactive"):
+        super().__init__(message, 400)
+
+
+class ActiveSupplier(APIException):
+    def __init__(self, message: str = "Supplier is already active"):
+        super().__init__(message, 400)
