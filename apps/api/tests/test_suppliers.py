@@ -220,6 +220,17 @@ async def test_update_invalid_rfc(client: AsyncClient):
     assert response.status_code == 422
 
 
+async def test_update_supplier_negative_lead_time(client: AsyncClient):
+    response = await client.post("/suppliers", json=SUPPLIER_JOHN_DOE_PAYLOAD)
+    supplier_id = response.json()["id"]
+
+    response = await client.patch(
+        f"/suppliers/{supplier_id}", json={"lead_time_days": -1}
+    )
+
+    assert response.status_code == 422
+
+
 async def test_update_supplier_not_found(client: AsyncClient):
     response = await client.patch(
         f"/suppliers/{uuid4()}", json=SUPPLIER_JOHN_DOE_PAYLOAD

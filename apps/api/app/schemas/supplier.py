@@ -61,8 +61,8 @@ class SupplierUpdate(BaseModel):
     company_name: str | None = None
     is_company: bool | None = None
     provide_invoice: bool | None = None
-    lead_time_days: int | None = None
-    minimum_order_quantity: int | None = None
+    lead_time_days: int | None = Field(default=None, ge=0)
+    minimum_order_quantity: int | None = Field(default=None, ge=1)
     minimum_order_value: Decimal | None = Field(default=None, ge=0)
 
     @field_validator("rfc", mode="before")
