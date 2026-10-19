@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.db.session import get_db
 from app.exceptions.handlers import register_exception_handlers
-from app.routers import customer_router, employee_router
+from app.routers import customer_router, employee_router, supplier_router
 
 app = FastAPI(title="Sweetboard API")
 
@@ -38,3 +38,4 @@ register_exception_handlers(app)
 
 app.include_router(employee_router)
 app.include_router(customer_router)
+app.include_router(supplier_router)
