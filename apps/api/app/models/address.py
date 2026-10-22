@@ -20,8 +20,8 @@ class Address(Base, UUIDMixin, TimestampMixin):
     country: Mapped[str] = mapped_column()
     postal_code: Mapped[str] = mapped_column()
     address_notes: Mapped[str | None] = mapped_column()
-    latitude: Mapped[Decimal] = mapped_column(Numeric(10, 8))
-    longitude: Mapped[Decimal] = mapped_column(Numeric(11, 8))
+    latitude: Mapped[Decimal | None] = mapped_column(Numeric(10, 8))
+    longitude: Mapped[Decimal | None] = mapped_column(Numeric(11, 8))
 
 
 class CustomerAddress(Base):
