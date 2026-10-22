@@ -1,4 +1,4 @@
-"""add employees address
+"""add address table and remove minimum_order_quantity from suppliers
 
 Revision ID: ecf8796ecfcf
 Revises: 934452af494a
