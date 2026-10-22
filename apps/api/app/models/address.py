@@ -66,3 +66,25 @@ class EmployeeAddress(Base):
             postgresql_where=text("is_default = true"),
         ),
     )
+
+
+class SupplierAddress(Base):
+    __tablename__ = "supplier_addresses"
+
+    supplier_id: Mapped[UUID] = mapped_column(
+        ForeignKey("suppliers.id", ondelete="CASCADE"), primary_key=True
+    )
+    address_id: Mapped[UUID] = mapped_column(
+        ForeignKey("addresses.id", ondelete="RESTRICT"), primary_key=True, index=True
+    )
+    is_default: Mapped[bool] = mapped_column(default=False)
+    is_billing: Mapped[bool] = mapped_column(default=False)
+
+    __table_args__ = (
+        Index(
+            "uq_supplier_addresses_one_default",
+            "supplier_id",
+            unique=True,
+            postgresql_where=text("is_default = true"),
+        ),
+    )
