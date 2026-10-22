@@ -1,6 +1,7 @@
 from decimal import Decimal
+from uuid import UUID
 
-from sqlalchemy import Numeric
+from sqlalchemy import ForeignKey, Index, Numeric, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -21,3 +22,25 @@ class Address(Base, UUIDMixin, TimestampMixin):
     address_notes: Mapped[str | None] = mapped_column()
     latitude: Mapped[Decimal] = mapped_column(Numeric(10, 8))
     longitude: Mapped[Decimal] = mapped_column(Numeric(11, 8))
+
+
+class CustomerAddress(Base):
+    __tablename__ = "customer_addresses"
+
+    customer_id: Mapped[UUID] = mapped_column(
+        ForeignKey("customers.id", ondelete="CASCADE"), primary_key=True
+    )
+    address_id: Mapped[UUID] = mapped_column(
+        ForeignKey("addresses.id", ondelete="RESTRICT"), primary_key=True, index=True
+    )
+    is_default: Mapped[bool] = mapped_column(default=False)
+    is_billing: Mapped[bool] = mapped_column(default=False)
+
+    __table_args__ = (
+        Index(
+            "uq_customer_addresses_one_default",
+            "customer_id",
+            unique=True,
+            postgresql_where=text("is_default = true"),
+        ),
+    )
