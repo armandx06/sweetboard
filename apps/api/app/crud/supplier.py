@@ -31,7 +31,6 @@ async def create_supplier(db: AsyncSession, data: SupplierCreate) -> Supplier:
         is_company=data.is_company,
         provide_invoice=data.provide_invoice,
         lead_time_days=data.lead_time_days,
-        minimum_order_quantity=data.minimum_order_quantity,
         minimum_order_value=data.minimum_order_value,
     )
     db.add(supplier)

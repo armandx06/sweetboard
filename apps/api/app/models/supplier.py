@@ -16,7 +16,6 @@ class Supplier(Base, PersonMixin):
     is_company: Mapped[bool] = mapped_column(default=False)
     provide_invoice: Mapped[bool] = mapped_column(default=False)
     lead_time_days: Mapped[int] = mapped_column(default=0)
-    minimum_order_quantity: Mapped[int] = mapped_column(default=1)
     minimum_order_value: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
     active: Mapped[bool] = mapped_column(default=False)
     activated_at: Mapped[date | None] = mapped_column()

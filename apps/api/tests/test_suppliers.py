@@ -11,7 +11,6 @@ SUPPLIER_JOHN_DOE_PAYLOAD: dict[str, str | bool | int | None] = {
     "is_company": True,
     "provide_invoice": True,
     "lead_time_days": 5,
-    "minimum_order_quantity": 10,
     "minimum_order_value": "100.00",
 }
 
@@ -31,7 +30,6 @@ async def test_create_supplier(client: AsyncClient):
     assert supplier["is_company"] == True
     assert supplier["provide_invoice"] == True
     assert supplier["lead_time_days"] == 5
-    assert supplier["minimum_order_quantity"] == 10
     assert supplier["minimum_order_value"] == "100.00"
     assert supplier["active"] == False
     assert supplier["activated_at"] is None
@@ -120,7 +118,6 @@ async def test_update_supplier(client: AsyncClient):
             "is_company": False,
             "provide_invoice": False,
             "lead_time_days": 0,
-            "minimum_order_quantity": 1,
             "minimum_order_value": "50.00",
         },
     )
@@ -137,7 +134,6 @@ async def test_update_supplier(client: AsyncClient):
     assert supplier["is_company"] is False
     assert supplier["provide_invoice"] is False
     assert supplier["lead_time_days"] == 0
-    assert supplier["minimum_order_quantity"] == 1
     assert supplier["minimum_order_value"] == "50.00"
 
 
