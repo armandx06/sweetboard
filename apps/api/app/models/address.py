@@ -44,3 +44,25 @@ class CustomerAddress(Base):
             postgresql_where=text("is_default = true"),
         ),
     )
+
+
+class EmployeeAddress(Base):
+    __tablename__ = "employee_addresses"
+
+    employee_id: Mapped[UUID] = mapped_column(
+        ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True
+    )
+    address_id: Mapped[UUID] = mapped_column(
+        ForeignKey("addresses.id", ondelete="RESTRICT"), primary_key=True, index=True
+    )
+    is_default: Mapped[bool] = mapped_column(default=False)
+    is_billing: Mapped[bool] = mapped_column(default=False)
+
+    __table_args__ = (
+        Index(
+            "uq_employee_addresses_one_default",
+            "employee_id",
+            unique=True,
+            postgresql_where=text("is_default = true"),
+        ),
+    )
