@@ -139,7 +139,7 @@ async def deactivate_employee(
 ) -> Employee:
     employee = await get_employee(db, employee_id)
 
-    if employee.hire_date is None:
+    if not employee.active:
         raise InactiveEmployee
 
     employee.active = False
