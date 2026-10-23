@@ -56,7 +56,6 @@ class EmployeeAddress(Base):
         ForeignKey("addresses.id", ondelete="RESTRICT"), primary_key=True, index=True
     )
     is_default: Mapped[bool] = mapped_column(default=False)
-    is_billing: Mapped[bool] = mapped_column(default=False)
 
     __table_args__ = (
         Index(
