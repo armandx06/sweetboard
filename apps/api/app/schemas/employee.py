@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.address import AddressRead
+
 
 class BaseEmployee(BaseModel):
     first_name: str
@@ -21,6 +23,7 @@ class EmployeeRead(BaseEmployee):
     id: UUID
     username: str
     email: str | None
+    addresses: list[AddressRead] | None = None
     hire_date: date | None
     termination_date: date | None
     active: bool

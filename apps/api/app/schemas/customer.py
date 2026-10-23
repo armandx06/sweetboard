@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.address import AddressRead
+
 
 class CustomerCreate(BaseModel):
     first_name: str
@@ -21,6 +23,7 @@ class CustomerRead(BaseModel):
     last_name: str
     phone_number: str
     email: str | None
+    addresses: list[AddressRead] | None = None
     company_name: str | None
     is_company: bool = False
     active: bool = False

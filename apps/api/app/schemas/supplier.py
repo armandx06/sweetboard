@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.address import AddressRead
+
 RFC_PATTERN = r"^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$"
 
 
@@ -37,6 +39,7 @@ class SupplierRead(BaseModel):
     last_name: str
     phone_number: str
     email: str | None
+    addresses: list[AddressRead] | None = None
     rfc: str | None
     company_name: str | None
     is_company: bool
