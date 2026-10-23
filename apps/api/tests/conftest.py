@@ -36,7 +36,7 @@ JANE_DOE_PAYLOAD: dict[str, str] = {
 
 @pytest.fixture
 async def db_session() -> AsyncGenerator[AsyncSession]:
-    engine = create_async_engine(settings.database_url)
+    engine = create_async_engine(settings.test_database_url)
 
     async with engine.connect() as connection:
         await connection.begin()
