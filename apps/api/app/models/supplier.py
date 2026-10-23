@@ -24,6 +24,5 @@ class Supplier(Base, PersonMixin):
     __table_args__ = (
         CheckConstraint("length(rfc) >= 12 and length(rfc) <= 13", "rfc_length"),
         CheckConstraint("lead_time_days >= 0", "lead_time_days_non_negative"),
-        CheckConstraint("minimum_order_quantity >= 1", "min_order_qty_positive"),
         CheckConstraint("minimum_order_value >= 0", "min_order_value_non_negative"),
     )
