@@ -1,12 +1,11 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class AddressCreateBody(BaseModel):
-    subject_id: UUID
     street: str
     exterior_number: str
     interior_number: str | None = None
@@ -21,6 +20,8 @@ class AddressCreateBody(BaseModel):
 
 
 class AddressRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     street: str
     exterior_number: str
@@ -37,6 +38,21 @@ class AddressRead(BaseModel):
     updated_at: datetime | None = None
 
 
+class CustomerSupplierAddressRead(AddressRead):
+    is_default: bool
+    is_billing: bool
+    active: bool
+    activated_at: date | None = None
+    deactivated_at: date | None = None
+
+
+class EmployeeAddressRead(AddressRead):
+    is_default: bool
+    active: bool
+    activated_at: date | None = None
+    deactivated_at: date | None = None
+
+
 class AddressUpdateBody(BaseModel):
     street: str | None = None
     exterior_number: str | None = None
@@ -49,3 +65,8 @@ class AddressUpdateBody(BaseModel):
     address_notes: str | None = None
     latitude: Decimal | None = None
     longitude: Decimal | None = None
+
+
+class CustomerSupplierAddressUpdateBody(AddressUpdateBody):
+    is_default: bool | None = None
+    is_billing: bool | None = None
