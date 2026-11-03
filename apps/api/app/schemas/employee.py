@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.address import AddressRead
+from app.schemas.address import EmployeeAddressRead
 
 
 class BaseEmployee(BaseModel):
@@ -23,7 +23,7 @@ class EmployeeRead(BaseEmployee):
     id: UUID
     username: str
     email: str | None
-    addresses: list[AddressRead] | None = None
+    addresses: list[EmployeeAddressRead] | None = None
     hire_date: date | None
     termination_date: date | None
     active: bool
