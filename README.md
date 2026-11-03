@@ -168,11 +168,13 @@ docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose
 
 | Document                                       | Contents                                                               |
 | ---------------------------------------------- | ---------------------------------------------------------------------- |
+| [`docs/README.md`](./docs/README.md)           | Documentation index, maintenance rules, and where to start             |
 | [`docs/api/README.md`](./docs/api/README.md)   | HTTP API reference: endpoints, payloads, errors, and address semantics |
 | [`docs/db/README.md`](./docs/db/README.md)     | Tables, relationships, constraints, business rules, migration history  |
 | [`docs/db/schema.sql`](./docs/db/schema.sql)   | Schema-only PostgreSQL dump of the implemented database                |
 | [`docs/db/schema.json`](./docs/db/schema.json) | ChartDB native save/export of the ER model                             |
-| [`docs/adr/`](./docs/adr/)                     | Architecture Decision Records                                          |
+| [`docs/adr/`](./docs/adr/)                     | Architecture Decision Records and their index                          |
+| [`CONTRIBUTING.md`](./CONTRIBUTING.md)         | Branch, commit, verification, migration, and pull request workflow     |
 
 ### ChartDB workflow
 
