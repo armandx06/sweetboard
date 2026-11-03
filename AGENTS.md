@@ -26,8 +26,9 @@
 - Tests need the `test_db` service (host port 5433). `tests/conftest.py` forces `POSTGRES_HOST`/`POSTGRES_TESTDB_HOST` to `localhost` and runs `alembic upgrade head` against the test DB once per session.
 - Test fixtures: `client` rolls back each test via nested transactions; `concurrent_client` commits real rows and truncates all tables afterward.
 - Migrations (from repo root, matching `apps/api/README.md`):
-  - `docker compose -f infra/docker/docker-compose.yml --project-directory . exec api uv run alembic revision --autogenerate -m "description"`
-  - `... exec api uv run alembic upgrade head`
+  - `docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose.dev.yml --project-directory . exec api alembic revision --autogenerate -m "description"`
+  - `... exec api alembic upgrade head`
+  - The final API image does not include `uv`; do not prefix Alembic commands with `uv run` inside the container.
 - Autogenerate only sees models imported in `app/models/__init__.py`; export every new model there. `alembic/env.py` uses `settings.database_url` unless the `sqlalchemy_url_override` config attribute is set (tests use this).
 - `app/db/session.py` sets `echo=True` on both engines, so SQL logging is intentionally noisy in dev.
 
@@ -37,13 +38,14 @@
 - `AsyncSession` does not lazy-load relationships (ADR 0002). Eager-load any relationship used in a response with `selectinload`/`joinedload`; otherwise serialization raises `MissingGreenlet`.
 - Models inherit `app.models.base.Base` (constraint naming convention) plus `UUIDMixin`/`TimestampMixin`/`PersonMixin`; use `Mapped`/`mapped_column`. Because `app/models/__init__.py` eagerly imports every model (and Alembic imports it), runtime imports between model modules create circular imports; use string forward references (`Mapped["X"]`) for cross-model relationships.
 - Addresses are shared: `addresses` has no owner column; per-role link tables (`customer_addresses`, `supplier_addresses`, `employee_addresses`) hold role flags and a partial unique index enforcing one default per subject (ADR 0008). Do not add owner columns to `addresses`.
-- Employee rules are deliberate (ADR 0007): usernames/passwords are server-generated, plaintext passwords appear only in create/reset responses, `PATCH` is limited to contact fields, and deactivation is the soft delete while hard `DELETE` is only for never-hired records.
+- Employee rules are deliberate (ADR 0007): usernames/passwords are server-generated, plaintext passwords appear only in create/reset responses, `PATCH` is limited to contact fields, and deactivation is the soft delete. Hard `DELETE` is intended only for never-hired records, but that guard is not implemented yet.
 
-## Schema docs
+## Documentation
 
-- `docs/db/README.md` and `docs/db/schema.json` are the schema source of truth (ADR 0005). Document only implemented and tested tables (ADR 0006); update the ChartDB export when the schema changes.
-- `docs/db/README.md` is currently stale: it says no tables are documented and references a `schema.sql` that does not exist. Treat `docs/db/schema.json` as the actual snapshot.
-- Architectural decisions live in `docs/adr/`; read the relevant ADR before changing schema or domain behavior.
+- `docs/db/README.md`, `docs/db/schema.sql`, and `docs/db/schema.json` document the implemented schema. `schema.sql` is a `pg_dump --schema-only` snapshot, and `schema.json` is a native ChartDB export that must not be hand-edited. ChartDB may omit partial unique indexes and `CHECK` constraints; the README and `schema.sql` are authoritative for those. Document only implemented and tested tables (ADR 0005, ADR 0006).
+- `docs/api/README.md` is the HTTP reference; update it when routes, payloads, status codes, or error behavior change.
+- Architectural decisions live in `docs/adr/` (index and template included); read the relevant ADR before changing schema or domain behavior.
+- `docs/README.md` is the documentation index. `CONTRIBUTING.md` covers branching, commits, verification, migrations, and pull requests.
 
 ## Frontend notes
 
