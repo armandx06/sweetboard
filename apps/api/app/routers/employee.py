@@ -6,6 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import employee as crud_employee
 from app.db.session import get_db
+from app.schemas.address import (
+    AddressCreateBody,
+    EmployeeAddressRead,
+    EmployeeAddressUpdateBody,
+)
 from app.schemas.employee import (
     EmployeeCreate,
     EmployeeCreateResponse,
@@ -26,6 +31,68 @@ router = APIRouter(prefix="/employees", tags=["Employees"])
 )
 async def create_employee(data: EmployeeCreate, db: AsyncSession = Depends(get_db)):
     return await crud_employee.create_employee(db, data)
+
+
+@router.post(
+    "/{employee_id}/addresses",
+    response_model=EmployeeAddressRead,
+    status_code=201,
+    summary="Create a new employee address",
+    description="Creates a new address with the provided details for an employee.",
+)
+async def create_employee_address(
+    employee_id: UUID,
+    address_data: AddressCreateBody,
+    is_default: bool = False,
+    db: AsyncSession = Depends(get_db),
+):
+    return await crud_employee.create_employee_address(
+        db, employee_id, address_data, is_default
+    )
+
+
+@router.get(
+    "/{employee_id}/addresses",
+    response_model=list[EmployeeAddressRead],
+    summary="List employee addresses",
+    description="Retrieve all addresses linked to an employee.",
+)
+async def list_employee_addresses(
+    employee_id: UUID, db: AsyncSession = Depends(get_db)
+):
+    return await crud_employee.list_employee_addresses(db, employee_id)
+
+
+@router.patch(
+    "/{employee_id}/addresses/{address_id}",
+    response_model=EmployeeAddressRead,
+    summary="Update an employee address",
+    description="Update an address linked to an employee and its link flags.",
+)
+async def update_employee_address(
+    employee_id: UUID,
+    address_id: UUID,
+    data: EmployeeAddressUpdateBody,
+    db: AsyncSession = Depends(get_db),
+):
+    return await crud_employee.update_employee_address(
+        db, employee_id, address_id, data
+    )
+
+
+@router.delete(
+    "/{employee_id}/addresses/{address_id}",
+    status_code=204,
+    summary="Remove an employee address",
+    description=(
+        "Unlink the address from the employee. The address is deleted only when "
+        "no other customer, supplier, or employee still uses it."
+    ),
+)
+async def delete_employee_address(
+    employee_id: UUID, address_id: UUID, db: AsyncSession = Depends(get_db)
+):
+    await crud_employee.delete_employee_address(db, employee_id, address_id)
 
 
 @router.get(

@@ -70,3 +70,7 @@ class AddressUpdateBody(BaseModel):
 class CustomerSupplierAddressUpdateBody(AddressUpdateBody):
     is_default: bool | None = None
     is_billing: bool | None = None
+
+
+class EmployeeAddressUpdateBody(AddressUpdateBody):
+    is_default: bool | None = None

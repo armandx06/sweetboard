@@ -16,6 +16,20 @@ EMPLOYEE_JANE_DOE_PAYLOAD: dict[str, str] = {
     "birth_date": "1990-01-02",
 }
 
+EMPLOYEE_ADDRESS_PAYLOAD: dict[str, str] = {
+    "street": "Av. Reforma",
+    "exterior_number": "123",
+    "interior_number": "4B",
+    "neighborhood": "Centro",
+    "city": "CDMX",
+    "state": "CDMX",
+    "country": "Mexico",
+    "postal_code": "06000",
+    "address_notes": "Tocar el timbre",
+    "latitude": "19.43260800",
+    "longitude": "-99.13320900",
+}
+
 
 async def test_create_employee(client: AsyncClient):
     response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
@@ -340,5 +354,274 @@ async def test_delete_employee(client: AsyncClient):
 
 async def test_delete_employee_not_found(client: AsyncClient):
     response = await client.delete(f"/employees/{uuid.uuid4()}")
+
+    assert response.status_code == 404
+
+
+async def test_create_employee_address(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    response = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json=EMPLOYEE_ADDRESS_PAYLOAD,
+        params={"is_default": True},
+    )
+
+    address = response.json()
+
+    assert response.status_code == 201
+    assert address["id"] is not None
+    assert address["street"] == "Av. Reforma"
+    assert address["exterior_number"] == "123"
+    assert address["interior_number"] == "4B"
+    assert address["neighborhood"] == "Centro"
+    assert address["city"] == "CDMX"
+    assert address["state"] == "CDMX"
+    assert address["country"] == "Mexico"
+    assert address["postal_code"] == "06000"
+    assert address["address_notes"] == EMPLOYEE_ADDRESS_PAYLOAD["address_notes"]
+    assert address["active"] is True
+    assert address["activated_at"] is not None
+    assert address["deactivated_at"] is None
+    assert address["is_default"] is True
+    assert "is_billing" not in address
+    assert address["created_at"] is not None
+
+
+async def test_create_employee_address_defaults_to_false(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    response = await client.post(
+        f"/employees/{employee_id}/addresses", json=EMPLOYEE_ADDRESS_PAYLOAD
+    )
+
+    assert response.status_code == 201
+    assert response.json()["is_default"] is False
+    assert "is_billing" not in response.json()
+
+
+async def test_create_employee_address_not_found(client: AsyncClient):
+    response = await client.post(
+        f"/employees/{uuid.uuid4()}/addresses", json=EMPLOYEE_ADDRESS_PAYLOAD
+    )
+
+    assert response.status_code == 404
+
+
+async def test_get_employee_includes_addresses(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+    response = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json=EMPLOYEE_ADDRESS_PAYLOAD,
+        params={"is_default": True},
+    )
+    address_id = response.json()["id"]
+
+    response = await client.get(f"/employees/{employee_id}")
+
+    addresses = response.json()["addresses"]
+
+    assert response.status_code == 200
+    assert len(addresses) == 1
+    assert addresses[0]["id"] == address_id
+    assert addresses[0]["street"] == "Av. Reforma"
+    assert addresses[0]["is_default"] is True
+    assert "is_billing" not in addresses[0]
+
+
+async def test_list_employee_addresses(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    first = await client.post(
+        f"/employees/{employee_id}/addresses", json=EMPLOYEE_ADDRESS_PAYLOAD
+    )
+    second = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json={**EMPLOYEE_ADDRESS_PAYLOAD, "street": "Calle 2"},
+    )
+
+    response = await client.get(f"/employees/{employee_id}/addresses")
+
+    addresses = response.json()
+    address_ids = [address["id"] for address in addresses]
+
+    assert response.status_code == 200
+    assert len(addresses) == 2
+    assert first.json()["id"] in address_ids
+    assert second.json()["id"] in address_ids
+
+
+async def test_list_employee_addresses_not_found(client: AsyncClient):
+    response = await client.get(f"/employees/{uuid.uuid4()}/addresses")
+
+    assert response.status_code == 404
+
+
+async def test_list_employees_includes_addresses(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+    response = await client.post(
+        f"/employees/{employee_id}/addresses", json=EMPLOYEE_ADDRESS_PAYLOAD
+    )
+    address_id = response.json()["id"]
+
+    response = await client.get("/employees", params={"include_inactive": True})
+
+    employee = next(e for e in response.json() if e["id"] == employee_id)
+
+    assert len(employee["addresses"]) == 1
+    assert employee["addresses"][0]["id"] == address_id
+
+
+async def test_update_employee_keeps_addresses(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+    response = await client.post(
+        f"/employees/{employee_id}/addresses", json=EMPLOYEE_ADDRESS_PAYLOAD
+    )
+    address_id = response.json()["id"]
+
+    response = await client.patch(
+        f"/employees/{employee_id}", json={"first_name": "Jane"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["addresses"][0]["id"] == address_id
+
+
+async def test_create_employee_address_replaces_default(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    first = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json=EMPLOYEE_ADDRESS_PAYLOAD,
+        params={"is_default": True},
+    )
+    second = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json={**EMPLOYEE_ADDRESS_PAYLOAD, "street": "Calle 2"},
+        params={"is_default": True},
+    )
+
+    response = await client.get(f"/employees/{employee_id}/addresses")
+
+    addresses = response.json()
+    defaults = [address for address in addresses if address["is_default"]]
+
+    assert len(defaults) == 1
+    assert defaults[0]["id"] == second.json()["id"]
+    assert defaults[0]["id"] != first.json()["id"]
+
+
+async def test_update_employee_address(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+    response = await client.post(
+        f"/employees/{employee_id}/addresses", json=EMPLOYEE_ADDRESS_PAYLOAD
+    )
+    address_id = response.json()["id"]
+
+    response = await client.patch(
+        f"/employees/{employee_id}/addresses/{address_id}",
+        json={
+            "street": "Calle 3",
+            "address_notes": None,
+            "is_default": True,
+        },
+    )
+
+    address = response.json()
+
+    assert response.status_code == 200
+    assert address["id"] == address_id
+    assert address["street"] == "Calle 3"
+    assert address["address_notes"] is None
+    assert address["is_default"] is True
+    assert "is_billing" not in address
+    assert address["updated_at"] is not None
+
+
+async def test_update_employee_address_replaces_default(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+    first = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json=EMPLOYEE_ADDRESS_PAYLOAD,
+        params={"is_default": True},
+    )
+    second = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json={**EMPLOYEE_ADDRESS_PAYLOAD, "street": "Calle 2"},
+    )
+
+    response = await client.patch(
+        f"/employees/{employee_id}/addresses/{second.json()['id']}",
+        json={"is_default": True},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["is_default"] is True
+
+    response = await client.get(f"/employees/{employee_id}/addresses")
+
+    defaults = [address for address in response.json() if address["is_default"]]
+
+    assert len(defaults) == 1
+    assert defaults[0]["id"] == second.json()["id"]
+    assert defaults[0]["id"] != first.json()["id"]
+
+
+async def test_update_employee_address_not_found(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    response = await client.patch(
+        f"/employees/{employee_id}/addresses/{uuid.uuid4()}",
+        json={"street": "Calle 3"},
+    )
+
+    assert response.status_code == 404
+
+
+async def test_delete_employee_address_deactivates(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+    response = await client.post(
+        f"/employees/{employee_id}/addresses",
+        json=EMPLOYEE_ADDRESS_PAYLOAD,
+        params={"is_default": True},
+    )
+    address_id = response.json()["id"]
+
+    response = await client.delete(
+        f"/employees/{employee_id}/addresses/{address_id}"
+    )
+
+    assert response.status_code == 204
+
+    response = await client.get(f"/employees/{employee_id}/addresses")
+
+    addresses = response.json()
+
+    assert len(addresses) == 1
+    assert addresses[0]["id"] == address_id
+    assert addresses[0]["active"] is False
+    assert addresses[0]["deactivated_at"] is not None
+    assert addresses[0]["is_default"] is False
+    assert "is_billing" not in addresses[0]
+
+
+async def test_delete_employee_address_not_found(client: AsyncClient):
+    response = await client.post("/employees", json=EMPLOYEE_JOHN_DOE_PAYLOAD)
+    employee_id = response.json()["id"]
+
+    response = await client.delete(
+        f"/employees/{employee_id}/addresses/{uuid.uuid4()}"
+    )
 
     assert response.status_code == 404

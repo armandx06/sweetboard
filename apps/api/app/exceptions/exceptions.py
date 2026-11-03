@@ -24,6 +24,11 @@ class EmployeeNotFound(APIException):
         super().__init__(message, 404)
 
 
+class EmployeeAddressNotFound(APIException):
+    def __init__(self, message: str = "Employee address not found"):
+        super().__init__(message, 404)
+
+
 class CustomerNotFound(APIException):
     def __init__(self, message: str = "Customer not found"):
         super().__init__(message, 404)

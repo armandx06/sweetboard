@@ -11,6 +11,7 @@ from app.models.mixins import TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
     from app.models.customer import Customer
+    from app.models.employee import Employee
     from app.models.supplier import Supplier
 
 
@@ -30,6 +31,9 @@ class Address(Base, UUIDMixin, TimestampMixin):
     longitude: Mapped[Decimal | None] = mapped_column(Numeric(11, 8))
 
     customer_addresses: Mapped[list["CustomerAddress"]] = relationship(
+        back_populates="address"
+    )
+    employee_addresses: Mapped[list["EmployeeAddress"]] = relationship(
         back_populates="address"
     )
     supplier_addresses: Mapped[list["SupplierAddress"]] = relationship(
@@ -78,6 +82,9 @@ class EmployeeAddress(Base):
     active: Mapped[bool] = mapped_column(default=True)
     activated_at: Mapped[date | None] = mapped_column()
     deactivated_at: Mapped[date | None] = mapped_column()
+
+    employee: Mapped["Employee"] = relationship(back_populates="addresses")
+    address: Mapped["Address"] = relationship(back_populates="employee_addresses")
 
     __table_args__ = (
         Index(
