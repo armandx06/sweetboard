@@ -29,6 +29,11 @@ class CustomerNotFound(APIException):
         super().__init__(message, 404)
 
 
+class CustomerAddressNotFound(APIException):
+    def __init__(self, message: str = "Customer address not found"):
+        super().__init__(message, 404)
+
+
 class InactiveCustomer(APIException):
     def __init__(self, message: str = "Customer is inactive"):
         super().__init__(message, 400)
