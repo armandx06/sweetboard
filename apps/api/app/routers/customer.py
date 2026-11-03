@@ -6,6 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import customer as crud_customer
 from app.db.session import get_db
+from app.schemas.address import (
+    AddressCreateBody,
+    CustomerSupplierAddressRead,
+    CustomerSupplierAddressUpdateBody,
+)
 from app.schemas.customer import CustomerCreate, CustomerRead, CustomerUpdate
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
@@ -20,6 +25,69 @@ router = APIRouter(prefix="/customers", tags=["Customers"])
 )
 async def create_customer(data: CustomerCreate, db: AsyncSession = Depends(get_db)):
     return await crud_customer.create_customer(db, data)
+
+
+@router.post(
+    "/{customer_id}/addresses",
+    response_model=CustomerSupplierAddressRead,
+    status_code=201,
+    summary="Create a new customer address",
+    description="Creates a new address with the provided details for a customer.",
+)
+async def create_customer_address(
+    customer_id: UUID,
+    address_data: AddressCreateBody,
+    is_default: bool = False,
+    is_billing: bool = False,
+    db: AsyncSession = Depends(get_db),
+):
+    return await crud_customer.create_customer_address(
+        db, customer_id, address_data, is_default, is_billing
+    )
+
+
+@router.get(
+    "/{customer_id}/addresses",
+    response_model=list[CustomerSupplierAddressRead],
+    summary="List customer addresses",
+    description="Retrieve all addresses linked to a customer.",
+)
+async def list_customer_addresses(
+    customer_id: UUID, db: AsyncSession = Depends(get_db)
+):
+    return await crud_customer.list_customer_addresses(db, customer_id)
+
+
+@router.patch(
+    "/{customer_id}/addresses/{address_id}",
+    response_model=CustomerSupplierAddressRead,
+    summary="Update a customer address",
+    description="Update an address linked to a customer and its link flags.",
+)
+async def update_customer_address(
+    customer_id: UUID,
+    address_id: UUID,
+    data: CustomerSupplierAddressUpdateBody,
+    db: AsyncSession = Depends(get_db),
+):
+    return await crud_customer.update_customer_address(
+        db, customer_id, address_id, data
+    )
+
+
+@router.delete(
+    "/{customer_id}/addresses/{address_id}",
+    status_code=204,
+    summary="Remove a customer address",
+    description=(
+        "Unlink the address from the customer. The address is deleted only when "
+        "no other customer, supplier, or employee still uses it."
+    ),
+)
+async def delete_customer_address(
+    customer_id: UUID, address_id: UUID, db: AsyncSession = Depends(get_db)
+):
+    await crud_customer.delete_customer_address(db, customer_id, address_id)
 
 
 @router.get(
