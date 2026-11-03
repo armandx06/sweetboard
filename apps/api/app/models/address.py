@@ -1,11 +1,16 @@
+from datetime import date
 from decimal import Decimal
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, Index, Numeric, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 from app.models.mixins import TimestampMixin, UUIDMixin
+
+if TYPE_CHECKING:
+    from app.models.customer import Customer
 
 
 class Address(Base, UUIDMixin, TimestampMixin):
@@ -23,6 +28,10 @@ class Address(Base, UUIDMixin, TimestampMixin):
     latitude: Mapped[Decimal | None] = mapped_column(Numeric(10, 8))
     longitude: Mapped[Decimal | None] = mapped_column(Numeric(11, 8))
 
+    customer_addresses: Mapped[list["CustomerAddress"]] = relationship(
+        back_populates="address"
+    )
+
 
 class CustomerAddress(Base):
     __tablename__ = "customer_addresses"
@@ -35,6 +44,12 @@ class CustomerAddress(Base):
     )
     is_default: Mapped[bool] = mapped_column(default=False)
     is_billing: Mapped[bool] = mapped_column(default=False)
+    active: Mapped[bool] = mapped_column(default=True)
+    activated_at: Mapped[date | None] = mapped_column()
+    deactivated_at: Mapped[date | None] = mapped_column()
+
+    customer: Mapped["Customer"] = relationship(back_populates="addresses")
+    address: Mapped["Address"] = relationship(back_populates="customer_addresses")
 
     __table_args__ = (
         Index(
@@ -56,6 +71,9 @@ class EmployeeAddress(Base):
         ForeignKey("addresses.id", ondelete="RESTRICT"), primary_key=True, index=True
     )
     is_default: Mapped[bool] = mapped_column(default=False)
+    active: Mapped[bool] = mapped_column(default=True)
+    activated_at: Mapped[date | None] = mapped_column()
+    deactivated_at: Mapped[date | None] = mapped_column()
 
     __table_args__ = (
         Index(
@@ -78,6 +96,9 @@ class SupplierAddress(Base):
     )
     is_default: Mapped[bool] = mapped_column(default=False)
     is_billing: Mapped[bool] = mapped_column(default=False)
+    active: Mapped[bool] = mapped_column(default=True)
+    activated_at: Mapped[date | None] = mapped_column()
+    deactivated_at: Mapped[date | None] = mapped_column()
 
     __table_args__ = (
         Index(
