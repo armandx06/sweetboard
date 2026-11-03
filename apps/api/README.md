@@ -42,19 +42,19 @@ docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose
 
 `app/core/config.py` loads the root `.env` by walking up the directory tree until it finds `pnpm-workspace.yaml`. Compose and the API therefore share one configuration file.
 
-| Variable                        | Purpose                                                        |
-| ------------------------------- | -------------------------------------------------------------- |
-| `POSTGRES_USER`                 | Development database user                                      |
-| `POSTGRES_PASSWORD`             | Development database password                                  |
-| `POSTGRES_DB`                   | Development database name                                      |
+| Variable                        | Purpose                                                         |
+| ------------------------------- | --------------------------------------------------------------- |
+| `POSTGRES_USER`                 | Development database user                                       |
+| `POSTGRES_PASSWORD`             | Development database password                                   |
+| `POSTGRES_DB`                   | Development database name                                       |
 | `POSTGRES_HOST`                 | Database host; `db` inside Compose, `localhost` for local tests |
-| `POSTGRES_INTERNAL_PORT`        | Database port inside the Compose network                       |
-| `POSTGRES_TESTDB_USER`          | Test database user                                             |
-| `POSTGRES_TESTDB_PASSWORD`      | Test database password                                         |
-| `POSTGRES_TESTDB_DB`            | Test database name                                             |
-| `POSTGRES_TESTDB_HOST`          | Test database host; `test_db` in Compose, `localhost` in tests |
-| `POSTGRES_TESTDB_INTERNAL_PORT` | Test database port used by the tests                           |
-| `ALLOWED_ORIGINS`               | CORS origins as a JSON array, e.g. `["http://localhost:3001"]` |
+| `POSTGRES_INTERNAL_PORT`        | Database port inside the Compose network                        |
+| `POSTGRES_TESTDB_USER`          | Test database user                                              |
+| `POSTGRES_TESTDB_PASSWORD`      | Test database password                                          |
+| `POSTGRES_TESTDB_DB`            | Test database name                                              |
+| `POSTGRES_TESTDB_HOST`          | Test database host; `test_db` in Compose, `localhost` in tests  |
+| `POSTGRES_TESTDB_INTERNAL_PORT` | Test database port used by the tests                            |
+| `ALLOWED_ORIGINS`               | CORS origins as a JSON array, e.g. `["http://localhost:3001"]`  |
 
 `tests/conftest.py` forces `POSTGRES_HOST` and `POSTGRES_TESTDB_HOST` to `localhost`, and `POSTGRES_TESTDB_INTERNAL_PORT` to `5433`, before importing the application settings. Tests therefore connect to the host-published test database.
 
