@@ -80,8 +80,9 @@ async def update_supplier_address(
     status_code=204,
     summary="Remove a supplier address",
     description=(
-        "Unlink the address from the supplier. The address is deleted only when "
-        "no other customer, supplier, or employee still uses it."
+        "Unlink the address from the supplier. The link is deactivated (soft "
+        "delete) and its flags are cleared; the address row is kept and may still "
+        "be used by other subjects."
     ),
 )
 async def delete_supplier_address(

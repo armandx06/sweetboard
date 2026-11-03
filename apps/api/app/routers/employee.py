@@ -85,8 +85,9 @@ async def update_employee_address(
     status_code=204,
     summary="Remove an employee address",
     description=(
-        "Unlink the address from the employee. The address is deleted only when "
-        "no other customer, supplier, or employee still uses it."
+        "Unlink the address from the employee. The link is deactivated (soft "
+        "delete) and its default flag is cleared; the address row is kept and may "
+        "still be used by other subjects."
     ),
 )
 async def delete_employee_address(
