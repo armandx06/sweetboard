@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** October 18, 2026
+- **Amended:** November 3, 2026
 - **Author:** [armandx06](https://github.com/armandx06)
 
 ---
@@ -43,21 +44,33 @@ addresses(
     latitude,
     longitude
 )
-customer_addresses  (customer_id, address_id, is_default, is_billing)
-supplier_addresses  (supplier_id, address_id, is_default, is_billing)
-employee_addresses  (employee_id, address_id, is_default, ...)
+customer_addresses  (customer_id, address_id, is_default, is_billing, active, activated_at, deactivated_at)
+supplier_addresses  (supplier_id, address_id, is_default, is_billing, active, activated_at, deactivated_at)
+employee_addresses  (employee_id, address_id, is_default, active, activated_at, deactivated_at)
 ```
 
 1. **`addresses` describes only a physical location.** It has no owner column and no flag that depends on who uses it.
 2. **One link table per role** (`customer_addresses`, `supplier_addresses`, `employee_addresses`). Each link table has real foreign keys to its role table and to `addresses`, so integrity is enforced by the database.
-3. **Relationship attributes live in the link tables, not in `addresses`.** `is_default` and `is_billing`, which the earlier customer-only design placed on `addresses`, describe how a particular subject uses an address, so they move to the link tables. Which attributes each link table carries is decided when that table is implemented; customers keep both, as originally designed.
+3. **Relationship attributes live in the link tables, not in `addresses`.** `is_default` and `is_billing`, which the earlier customer-only design placed on `addresses`, describe how a particular subject uses an address, so they move to the link tables. Which attributes each link table carries is decided when that table is implemented; customers and suppliers keep both, while employee addresses intentionally omit `is_billing` (migration `e423c02db1c6`).
 4. **Composite primary key `(subject_id, address_id)`** on each link table, with no surrogate id. This prevents linking the same address twice to the same subject.
 5. **At most one default address per subject**, enforced by a partial unique index on `subject_id` where `is_default` is true.
 6. **Foreign key behavior:**
    - `subject_id` is `ON DELETE CASCADE`: if a subject is physically deleted (reserved for data-entry errors, per ADR 0007), its link rows disappear with it.
    - `address_id` is `ON DELETE RESTRICT`: an address that is still linked to any subject cannot be deleted.
 7. **An index on `address_id` in each link table.** The composite primary key only helps lookups by `subject_id`; the extra index supports finding every subject that shares an address and the `RESTRICT` check on deletion.
-8. **Implementation order follows ADR 0006:** `addresses` and `customer_addresses` first, then `supplier_addresses` and `employee_addresses`, each implemented, migrated, and tested before the next. `docs/db/schema.json` is updated per ADR 0005 to replace the customer-only design.
+8. **Implementation order follows ADR 0006:** `addresses` and `customer_addresses` first, then `supplier_addresses` and `employee_addresses`, each implemented, migrated, and tested before the next. This order has been completed; `docs/db/schema.json` and `docs/db/schema.sql` now reflect the resulting schema.
+
+### Address link lifecycle and API semantics
+
+- Each link row has `active`, `activated_at`, and `deactivated_at`. Creating a link sets `active = true` and `activated_at = today`.
+- `DELETE /{role}/{id}/addresses/{address_id}` is a soft delete of the link: it sets `active = false`, `deactivated_at = today`, clears `is_default`, and clears `is_billing` for customers and suppliers. The shared row in `addresses` is not deleted.
+- At most one link per subject may have `is_default = true`; the CRUD layer clears the previous default before setting a new one.
+- Employee addresses expose `is_default` but not `is_billing`.
+- Editing a shared address changes it for every role linked to that address.
+
+### Implementation status (November 3, 2026)
+
+All three link tables, their lifecycle fields, and their CRUD endpoints are implemented and tested. The employee billing flag was removed by migration `e423c02db1c6`, and the lifecycle fields were added by `c4f8a1d2b6e3`.
 
 ## Consequences
 

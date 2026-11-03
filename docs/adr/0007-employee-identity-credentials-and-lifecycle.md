@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** September 27, 2026
+- **Amended:** November 3, 2026
 - **Author:** [armandx06](https://github.com/armandx06)
 
 ---
@@ -40,14 +41,14 @@ Resetting a password is exposed as `POST /employees/{id}/reset-password`, a stan
 
 Two distinct removal paths exist:
 
-- `PATCH /employees/{id}/deactivate` and `/reactivate` set `active = false` / `true` and manage `termination_date`, preserving the row and its history. This is the path used when an employee actually stops working at the bakery.
-- `DELETE /employees/{id}` performs a real, physical deletion. It exists only to correct data-entry mistakes (an employee record created and never activated), and is guarded: an employee can only be deactivated if they have a `hire_date` (i.e., they were actually activated at some point) — attempting to deactivate an employee that was never hired raises a domain error instead, funneling that case toward physical deletion instead.
+- `PATCH /employees/{id}/deactivate` sets `active = false` and records `termination_date`, preserving the row and its history. `PATCH /employees/{id}/activate` sets `active = true`, sets `hire_date` to the supplied date or to today, and clears `termination_date`. This is the path used when an employee actually stops working at the bakery and later returns.
+- `DELETE /employees/{id}` performs a real, physical deletion. It is intended only to correct data-entry mistakes (an employee record created and never activated). The original decision specified a `hire_date` guard for this operation, but the current implementation does not enforce it: `delete_employee` deletes any existing employee. This is a known implementation gap that must be closed before employee records participate in business history (shifts, sales, inventory movements).
 
-**Rationale:** once `Employee` participates in relationships with other business data (shifts, sales, inventory movements), a physical delete would either cascade-destroy or orphan that history. Since `active` and `termination_date` already existed on the model for exactly this purpose, using them for real terminations was a matter of finishing an already-intended design, not adding new fields. Physical deletion remains available, but only for the narrow case where no real business history could possibly be attached yet (an employee who was created but never activated).
+**Rationale:** once `Employee` participates in relationships with other business data, a physical delete would either cascade-destroy or orphan that history. Since `active` and `termination_date` already existed on the model for exactly this purpose, using them for real terminations was a matter of finishing an already-intended design, not adding new fields. Physical deletion remains available for the narrow case where no real business history could possibly be attached yet, but the guard that enforces that narrow case still needs to be implemented.
 
 ## Decision 6: Domain Exceptions Instead of Per-Endpoint HTTP Checks
 
-CRUD functions (`app/crud/employee.py`) never raise `HTTPException` or know about HTTP status codes. Instead, they raise domain-specific exceptions (`EmployeeNotFound`, `InactiveEmployee`), which are translated to HTTP responses by centralized handlers (`app/exceptions/handlers.py`) registered once at the application level. The same centralization applies to `IntegrityError` (e.g., a username collision under concurrent creation), consistently mapped to `409 Conflict` regardless of which endpoint triggered it.
+CRUD functions (`app/crud/employee.py`) never raise `HTTPException` or know about HTTP status codes. Instead, they raise domain-specific exceptions (`EmployeeNotFound`, `InactiveEmployee`, `ActiveEmployee`, `EmployeeAddressNotFound`), which are translated to HTTP responses by centralized handlers (`app/exceptions/handlers.py`) registered once at the application level. The same centralization applies to `IntegrityError` (e.g., a username collision under concurrent creation), consistently mapped to `409 Conflict` regardless of which endpoint triggered it.
 
 **Rationale:** the earlier pattern (`if employee is None: raise HTTPException(...)` repeated per router function) duplicated the same check and the same status code decision across every endpoint, and produced inconsistent results in practice (the same conflict returning `409` in one endpoint and `400` in another before this was centralized). Keeping the CRUD layer HTTP-agnostic also means it could be reused by a non-HTTP entry point (a CLI script, a background job) without dragging FastAPI-specific exceptions into it.
 
@@ -62,7 +63,7 @@ CRUD functions (`app/crud/employee.py`) never raise `HTTPException` or know abou
 ### Trade-offs / Known Gaps
 
 - Username changes on name correction are not yet communicated to the affected employee or externally auditable beyond the updated `username` field itself; this depends on the future email-notification feature referenced in Decisions 1 and 2.
-- The physical-deletion guard (`hire_date is None`) assumes `hire_date` is only ever set through `activate_employee`; if `hire_date` becomes settable through another path in the future, this guard must be revisited.
+- The physical-deletion guard based on `hire_date` described in Decision 5 is not implemented yet; `delete_employee` currently deletes any existing record. It must be revisited before employee history exists.
 - Username generation under concurrent identical requests relies on catching `IntegrityError` and returning `409` rather than preventing the race outright (e.g., via an advisory lock); this is accepted as sufficient for the current low-concurrency, single-admin usage pattern.
 
 ---
