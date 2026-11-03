@@ -6,16 +6,16 @@ ADRs are records of decisions, not tutorials. Current setup instructions live in
 
 ## Index
 
-| ADR                                                                                     | Decision                                                        | Status   | Date       | Notes               |
-| --------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------- | ---------- | ------------------- |
-| [0001](./0001-postgres-in-docker-for-development.md)                                    | Run PostgreSQL in Docker with a persistent named volume         | Accepted | 2026-07-26 |                     |
-| [0002](./0002-using-asynchronous-sqlalchemy-with-asyncpg.md)                            | Use async SQLAlchemy 2.0 with asyncpg for runtime and Alembic   | Accepted | 2026-07-28 |                     |
-| [0003](./0003-ports-environment-variables-naming.md)                                    | Separate host and internal port environment variables           | Accepted | 2026-08-02 |                     |
-| [0004](./0004-chartdb-for-er-modeling.md)                                               | Use ChartDB as the local ER modeling tool                       | Accepted | 2026-08-30 | Amended by ADR 0006 |
-| [0005](./0005-single-source-of-truth-for-database-schema-documentation.md)              | Keep one canonical schema snapshot in `docs/db/`                | Accepted | 2026-09-08 |                     |
-| [0006](./0006-incremental-table-by-table-modeling-instead-of-full-upfront-er-design.md) | Model and implement one table group at a time                   | Accepted | 2026-09-18 | Amends ADR 0004     |
-| [0007](./0007-employee-identity-credentials-and-lifecycle.md)                           | Server-generated employee credentials and soft-delete lifecycle | Accepted | 2026-09-27 | Amended 2026-11-03  |
-| [0008](./0008-shared-addresses-with-per-role-link-tables.md)                            | Share physical addresses and keep role flags in link tables     | Accepted | 2026-10-18 | Amended 2026-11-03  |
+| ADR                                                                                     | Decision                                                        | Status   | Date       | Notes                        |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------- | ---------- | ---------------------------- |
+| [0001](./0001-postgres-in-docker-for-development.md)                                    | Run PostgreSQL in Docker with a persistent named volume         | Accepted | 2026-07-26 |                              |
+| [0002](./0002-using-asynchronous-sqlalchemy-with-asyncpg.md)                            | Use async SQLAlchemy 2.0 with asyncpg for runtime and Alembic   | Accepted | 2026-07-28 |                              |
+| [0003](./0003-ports-environment-variables-naming.md)                                    | Separate host and internal port environment variables           | Accepted | 2026-08-02 |                              |
+| [0004](./0004-chartdb-for-er-modeling.md)                                               | Use ChartDB as the local ER modeling tool                       | Accepted | 2026-08-30 | Amended by ADR 0005 and 0006 |
+| [0005](./0005-single-source-of-truth-for-database-schema-documentation.md)              | Keep one canonical schema snapshot in `docs/db/`                | Accepted | 2026-09-08 |                              |
+| [0006](./0006-incremental-table-by-table-modeling-instead-of-full-upfront-er-design.md) | Model and implement one table group at a time                   | Accepted | 2026-09-18 | Amends ADR 0004              |
+| [0007](./0007-employee-identity-credentials-and-lifecycle.md)                           | Server-generated employee credentials and soft-delete lifecycle | Accepted | 2026-09-27 | Amended 2026-11-03           |
+| [0008](./0008-shared-addresses-with-per-role-link-tables.md)                            | Share physical addresses and keep role flags in link tables     | Accepted | 2026-10-18 | Amended 2026-11-03           |
 
 The highest number currently in use is **0008**. A new ADR takes the next unused number.
 

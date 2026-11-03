@@ -107,7 +107,7 @@ If you changed the schema, also:
 3. Update the ChartDB diagram and export `docs/db/schema.json`.
 4. Update `docs/db/README.md` with the new tables, constraints, and business rules.
 
-Do not hand-edit `docs/db/schema.json`; it is a native ChartDB export, only minify the JSON file.
+Do not hand-edit `docs/db/schema.json`; it is a native ChartDB export. Re-export it from ChartDB instead of changing its contents manually. Minifying the exported JSON (removing formatting whitespace) is allowed because it does not change semantics.
 
 ### Documentation
 

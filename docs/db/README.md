@@ -57,7 +57,24 @@ Supplier check constraints:
 
 Describes only a physical location. It has **no owner column** and no role-specific flags. The same address row can be linked to any number of customers, suppliers, and employees, per [ADR 0008](../adr/0008-shared-addresses-with-per-role-link-tables.md).
 
-`latitude` and `longitude` are nullable `numeric(10,8)` / `numeric(11,8)` values.
+| Column            | Nullable | Type            | Notes                           |
+| ----------------- | -------- | --------------- | ------------------------------- |
+| `street`          | no       | `varchar`       |                                 |
+| `exterior_number` | no       | `varchar`       |                                 |
+| `interior_number` | yes      | `varchar`       |                                 |
+| `neighborhood`    | no       | `varchar`       |                                 |
+| `city`            | no       | `varchar`       |                                 |
+| `state`           | no       | `varchar`       |                                 |
+| `country`         | no       | `varchar`       |                                 |
+| `postal_code`     | no       | `varchar`       |                                 |
+| `address_notes`   | yes      | `varchar`       | Free-form delivery notes        |
+| `latitude`        | yes      | `numeric(10,8)` |                                 |
+| `longitude`       | yes      | `numeric(11,8)` |                                 |
+| `id`              | no       | `uuid`          | PK, default `gen_random_uuid()` |
+| `created_at`      | no       | `timestamptz`   | Default `now()`                 |
+| `updated_at`      | yes      | `timestamptz`   |                                 |
+
+Address text fields are stored as received; the API does not trim them.
 
 #### Address link tables
 

@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** August 30, 2026
+- **Amended:** November 3, 2026
 - **Assigned to:** Jorge Armando Ceras Cárdenas - [armandx06](https://github.com/armandx06)
 
 ## Context and Problem Description
@@ -39,6 +40,10 @@ Between ChartDB's official Docker image and a community fork that adds on-disk d
 
 ChartDB is a development-only dependency; it is never deployed to production or exposed outside `localhost`. Diagram state lives in the browser until manually exported, so losing browser storage before exporting means losing unsaved diagram work. Schema history lives in `docs/db/`, decoupled from ChartDB itself, so the project isn't locked into this specific tool going forward.
 
+## Amendments
+
+- **November 3, 2026:** Implementation detail 4 described versioning numbered snapshot folders (JSON export + SQL DDL export) under `docs/db/`. [ADR 0005](./0005-single-source-of-truth-for-database-schema-documentation.md) replaced that scheme with a single canonical `docs/db/schema.json` and `docs/db/schema.sql` plus Git history, and [ADR 0006](./0006-incremental-table-by-table-modeling-instead-of-full-upfront-er-design.md) changed the modeling workflow to one implemented table group at a time. The choice of ChartDB itself is unchanged.
+
 ---
 
-Created by [armandx06](https://github.com/armandx06) on August 30, 2026
+Created by [armandx06](https://github.com/armandx06) on August 30, 2026. Amended November 3, 2026.
