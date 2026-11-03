@@ -4,13 +4,13 @@ Sweetboard is the management platform for **Repostería Cárdenas**. It centrali
 
 ## Stack
 
-| Area          | Technology                                                       |
-| ------------- | ---------------------------------------------------------------- |
-| Landing page  | Next.js 16 (App Router), React 19, Tailwind CSS 4                |
-| Web app       | Next.js 16 (App Router), React 19, Tailwind CSS 4                |
-| API           | Python 3.13, FastAPI, SQLAlchemy 2.0 (async), asyncpg, Alembic   |
-| Database      | PostgreSQL 18                                                    |
-| Local tooling | Docker Compose, pnpm, uv, ChartDB                                |
+| Area          | Technology                                                     |
+| ------------- | -------------------------------------------------------------- |
+| Landing page  | Next.js 16 (App Router), React 19, Tailwind CSS 4              |
+| Web app       | Next.js 16 (App Router), React 19, Tailwind CSS 4              |
+| API           | Python 3.13, FastAPI, SQLAlchemy 2.0 (async), asyncpg, Alembic |
+| Database      | PostgreSQL 18                                                  |
+| Local tooling | Docker Compose, pnpm, uv, ChartDB                              |
 
 ## Repository layout
 
@@ -81,16 +81,16 @@ The API itself runs inside Docker; a local Python installation is not required t
 
 ## Services and ports
 
-| Service               | URL / port                    | Notes                                      |
-| --------------------- | ----------------------------- | ------------------------------------------ |
-| Landing               | <http://localhost:3000>       | Next.js development server                 |
-| Web                   | <http://localhost:3001>       | Next.js development server                 |
-| API                   | <http://localhost:8000>       | FastAPI                                    |
-| API documentation     | <http://localhost:8000/docs>  | Swagger UI; OpenAPI JSON at `/openapi.json` |
-| API health            | <http://localhost:8000/health> | Checks the database connection             |
-| PostgreSQL            | `localhost:5432`              | Development database                       |
-| Test PostgreSQL       | `localhost:5433`              | Used by `uv run pytest`                    |
-| ChartDB               | <http://localhost:8080>       | Development-only ER modeling tool          |
+| Service           | URL / port                     | Notes                                       |
+| ----------------- | ------------------------------ | ------------------------------------------- |
+| Landing           | <http://localhost:3000>        | Next.js development server                  |
+| Web               | <http://localhost:3001>        | Next.js development server                  |
+| API               | <http://localhost:8000>        | FastAPI                                     |
+| API documentation | <http://localhost:8000/docs>   | Swagger UI; OpenAPI JSON at `/openapi.json` |
+| API health        | <http://localhost:8000/health> | Checks the database connection              |
+| PostgreSQL        | `localhost:5432`               | Development database                        |
+| Test PostgreSQL   | `localhost:5433`               | Used by `uv run pytest`                     |
+| ChartDB           | <http://localhost:8080>        | Development-only ER modeling tool           |
 
 Ports and credentials come from the root `.env`; see [`.env.example`](./.env.example) for every variable.
 
@@ -98,13 +98,13 @@ Ports and credentials come from the root `.env`; see [`.env.example`](./.env.exa
 
 ### Infrastructure
 
-| Command                | Description                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| `pnpm dev:infra`       | Start every service in the background                                          |
-| `pnpm dev:infra:down`  | Stop the containers and keep the database volumes                              |
-| `pnpm dev:infra:reset` | Stop the containers and remove the volumes, wiping the development database    |
-| `pnpm dev:infra:logs`  | Follow logs; pass a service name to filter, e.g. `pnpm dev:infra:logs -- api`  |
-| `pnpm dev:infra:ps`    | Show container status                                                          |
+| Command                | Description                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `pnpm dev:infra`       | Start every service in the background                                         |
+| `pnpm dev:infra:down`  | Stop the containers and keep the database volumes                             |
+| `pnpm dev:infra:reset` | Stop the containers and remove the volumes, wiping the development database   |
+| `pnpm dev:infra:logs`  | Follow logs; pass a service name to filter, e.g. `pnpm dev:infra:logs -- api` |
+| `pnpm dev:infra:ps`    | Show container status                                                         |
 
 The scripts always merge `infra/docker/docker-compose.yml` with `infra/docker/docker-compose.dev.yml` and use `--project-directory .`, so Compose reads the same root `.env`. The development overlay adds ChartDB and `test_db`.
 
@@ -166,13 +166,13 @@ docker compose -f infra/docker/docker-compose.yml -f infra/docker/docker-compose
 
 ## Documentation
 
-| Document                                       | Contents                                                                 |
-| ---------------------------------------------- | ------------------------------------------------------------------------ |
-| [`docs/api/README.md`](./docs/api/README.md)   | HTTP API reference: endpoints, payloads, errors, and address semantics   |
-| [`docs/db/README.md`](./docs/db/README.md)     | Tables, relationships, constraints, business rules, migration history    |
-| [`docs/db/schema.sql`](./docs/db/schema.sql)   | Schema-only PostgreSQL dump of the implemented database                  |
-| [`docs/db/schema.json`](./docs/db/schema.json) | ChartDB native save/export of the ER model                               |
-| [`docs/adr/`](./docs/adr/)                     | Architecture Decision Records                                            |
+| Document                                       | Contents                                                               |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| [`docs/api/README.md`](./docs/api/README.md)   | HTTP API reference: endpoints, payloads, errors, and address semantics |
+| [`docs/db/README.md`](./docs/db/README.md)     | Tables, relationships, constraints, business rules, migration history  |
+| [`docs/db/schema.sql`](./docs/db/schema.sql)   | Schema-only PostgreSQL dump of the implemented database                |
+| [`docs/db/schema.json`](./docs/db/schema.json) | ChartDB native save/export of the ER model                             |
+| [`docs/adr/`](./docs/adr/)                     | Architecture Decision Records                                          |
 
 ### ChartDB workflow
 
