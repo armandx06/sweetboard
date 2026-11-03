@@ -453,4 +453,4 @@ The response is the updated `EmployeeRead` with `active = false` and `terminatio
 
 ---
 
-See [`apps/api/README.md`](../../apps/api/README.md) for local setup, tests, and migrations. See [`README.md`](../../README.md) for the full stack and Docker workflow.
+See [`apps/api/README.md`](../../apps/api/README.md) for local setup, tests, and migrations. See [`CONTRIBUTING.md`](../../CONTRIBUTING.md) for the branch, commit, and verification workflow. See [`README.md`](../../README.md) for the full stack and Docker workflow, or [`docs/README.md`](../README.md) for the documentation index.
