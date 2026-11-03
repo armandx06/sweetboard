@@ -6,6 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import supplier as crud_supplier
 from app.db.session import get_db
+from app.schemas.address import (
+    AddressCreateBody,
+    CustomerSupplierAddressRead,
+    CustomerSupplierAddressUpdateBody,
+)
 from app.schemas.supplier import SupplierCreate, SupplierRead, SupplierUpdate
 
 router = APIRouter(prefix="/suppliers", tags=["Suppliers"])
@@ -20,6 +25,69 @@ router = APIRouter(prefix="/suppliers", tags=["Suppliers"])
 )
 async def create_supplier(data: SupplierCreate, db: AsyncSession = Depends(get_db)):
     return await crud_supplier.create_supplier(db, data)
+
+
+@router.post(
+    "/{supplier_id}/addresses",
+    response_model=CustomerSupplierAddressRead,
+    status_code=201,
+    summary="Create a new supplier address",
+    description="Creates a new address with the provided details for a supplier.",
+)
+async def create_supplier_address(
+    supplier_id: UUID,
+    address_data: AddressCreateBody,
+    is_default: bool = False,
+    is_billing: bool = False,
+    db: AsyncSession = Depends(get_db),
+):
+    return await crud_supplier.create_supplier_address(
+        db, supplier_id, address_data, is_default, is_billing
+    )
+
+
+@router.get(
+    "/{supplier_id}/addresses",
+    response_model=list[CustomerSupplierAddressRead],
+    summary="List supplier addresses",
+    description="Retrieve all addresses linked to a supplier.",
+)
+async def list_supplier_addresses(
+    supplier_id: UUID, db: AsyncSession = Depends(get_db)
+):
+    return await crud_supplier.list_supplier_addresses(db, supplier_id)
+
+
+@router.patch(
+    "/{supplier_id}/addresses/{address_id}",
+    response_model=CustomerSupplierAddressRead,
+    summary="Update a supplier address",
+    description="Update an address linked to a supplier and its link flags.",
+)
+async def update_supplier_address(
+    supplier_id: UUID,
+    address_id: UUID,
+    data: CustomerSupplierAddressUpdateBody,
+    db: AsyncSession = Depends(get_db),
+):
+    return await crud_supplier.update_supplier_address(
+        db, supplier_id, address_id, data
+    )
+
+
+@router.delete(
+    "/{supplier_id}/addresses/{address_id}",
+    status_code=204,
+    summary="Remove a supplier address",
+    description=(
+        "Unlink the address from the supplier. The address is deleted only when "
+        "no other customer, supplier, or employee still uses it."
+    ),
+)
+async def delete_supplier_address(
+    supplier_id: UUID, address_id: UUID, db: AsyncSession = Depends(get_db)
+):
+    await crud_supplier.delete_supplier_address(db, supplier_id, address_id)
 
 
 @router.get(

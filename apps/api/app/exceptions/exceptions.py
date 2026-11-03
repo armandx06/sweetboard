@@ -49,6 +49,11 @@ class SupplierNotFound(APIException):
         super().__init__(message, 404)
 
 
+class SupplierAddressNotFound(APIException):
+    def __init__(self, message: str = "Supplier address not found"):
+        super().__init__(message, 404)
+
+
 class InactiveSupplier(APIException):
     def __init__(self, message: str = "Supplier is inactive"):
         super().__init__(message, 400)

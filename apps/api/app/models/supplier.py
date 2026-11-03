@@ -1,11 +1,15 @@
 from datetime import date
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 from app.models.mixins import PersonMixin
+
+if TYPE_CHECKING:
+    from app.models.address import SupplierAddress
 
 
 class Supplier(Base, PersonMixin):
@@ -17,6 +21,9 @@ class Supplier(Base, PersonMixin):
     provide_invoice: Mapped[bool] = mapped_column(default=False)
     lead_time_days: Mapped[int] = mapped_column(default=0)
     minimum_order_value: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
+    addresses: Mapped[list["SupplierAddress"]] = relationship(
+        back_populates="supplier", cascade="all, delete-orphan"
+    )
     active: Mapped[bool] = mapped_column(default=False)
     activated_at: Mapped[date | None] = mapped_column()
     deactivated_at: Mapped[date | None] = mapped_column()
