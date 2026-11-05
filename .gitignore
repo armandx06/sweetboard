@@ -13,3 +13,6 @@ __pycache__
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+
+# Editor
+.vscode
