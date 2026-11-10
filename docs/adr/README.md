@@ -16,8 +16,12 @@ ADRs are records of decisions, not tutorials. Current setup instructions live in
 | [0006](./0006-incremental-table-by-table-modeling-instead-of-full-upfront-er-design.md) | Model and implement one table group at a time                   | Accepted | 2026-09-18 | Amends ADR 0004              |
 | [0007](./0007-employee-identity-credentials-and-lifecycle.md)                           | Server-generated employee credentials and soft-delete lifecycle | Accepted | 2026-09-27 | Amended 2026-11-03           |
 | [0008](./0008-shared-addresses-with-per-role-link-tables.md)                            | Share physical addresses and keep role flags in link tables     | Accepted | 2026-10-18 | Amended 2026-11-03           |
+| [0009](./0009-product-catalog-with-independent-capabilities.md)                         | Model one product catalog with independent capability flags     | Proposed | 2026-11-05 | Inventory core               |
+| [0010](./0010-inventory-ledger-lots-and-moving-weighted-average-cost.md)                | Use an inventory ledger with lots and moving average cost       | Proposed | 2026-11-05 | Inventory core               |
 
-The highest number currently in use is **0008**. A new ADR takes the next unused number.
+The highest number currently in use is **0010**. A new ADR takes the next unused number.
+
+`Proposed` ADRs are plans under review; they are not binding until the corresponding code and tests are implemented and the status changes to `Accepted`.
 
 ## When to write an ADR
 
@@ -60,4 +64,4 @@ An accepted ADR is not rewritten to pretend the original decision was different.
 
 ---
 
-Made by [armandx06](https://github.com/armandx06) at November 3, 2026.
+Made by [armandx06](https://github.com/armandx06) at November 5, 2026.

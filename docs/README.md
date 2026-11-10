@@ -1,18 +1,19 @@
 # DOCUMENTATION
 
-This directory is the documentation index for Sweetboard. It describes implemented behavior, not aspirational design.
+This directory is the documentation index for Sweetboard. It describes implemented behavior, except under [`design/`](./design/), which holds plans that are explicitly not implemented yet.
 
 ## Where to start
 
-| Audience / task             | Document                                   |
-| --------------------------- | ------------------------------------------ |
-| Run the full stack          | [`../README.md`](../README.md)             |
-| Contribute code or docs     | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) |
-| Call the HTTP API           | [`api/README.md`](./api/README.md)         |
-| Understand or change the DB | [`db/README.md`](./db/README.md)           |
-| Read architecture decisions | [`adr/README.md`](./adr/README.md)         |
-| Inspect the DDL snapshot    | [`db/schema.sql`](./db/schema.sql)         |
-| Inspect the ChartDB export  | [`db/schema.json`](./db/schema.json)       |
+| Audience / task             | Document                                                 |
+| --------------------------- | -------------------------------------------------------- |
+| Run the full stack          | [`../README.md`](../README.md)                           |
+| Contribute code or docs     | [`../CONTRIBUTING.md`](../CONTRIBUTING.md)               |
+| Call the HTTP API           | [`api/README.md`](./api/README.md)                       |
+| Understand or change the DB | [`db/README.md`](./db/README.md)                         |
+| Read architecture decisions | [`adr/README.md`](./adr/README.md)                       |
+| Plan the next feature       | [`design/inventory-core.md`](./design/inventory-core.md) |
+| Inspect the DDL snapshot    | [`db/schema.sql`](./db/schema.sql)                       |
+| Inspect the ChartDB export  | [`db/schema.json`](./db/schema.json)                     |
 
 ## Current documentation map
 
@@ -24,11 +25,13 @@ docs/
 ├── adr/
 │   ├── README.md      # ADR index and process
 │   ├── template.md    # Template for new ADRs
-│   └── 0001..0008     # Accepted Architecture Decision Records
-└── db/
-    ├── README.md      # Tables, relationships, constraints, business rules
-    ├── schema.sql     # pg_dump --schema-only snapshot
-    └── schema.json    # Native ChartDB save/export
+│   └── 0001..0010     # Proposed and accepted Architecture Decision Records
+├── db/
+│   ├── README.md      # Tables, relationships, constraints, business rules
+│   ├── schema.sql     # pg_dump --schema-only snapshot
+│   └── schema.json    # Native ChartDB save/export
+└── design/
+    └── inventory-core.md  # Planned inventory iteration; not implemented yet
 ```
 
 ## Documentation rules
@@ -42,6 +45,7 @@ Update the relevant document in the same change that modifies behavior:
 | Endpoint, payload, status code, error   | `docs/api/README.md` and tests                               |
 | Table, column, constraint, relationship | Model + Alembic migration + `docs/db/README.md` + snapshots  |
 | Architectural or cross-cutting decision | New or amended ADR under `docs/adr/`                         |
+| New feature plan                        | `docs/design/` plus a `Proposed` ADR if a decision is made   |
 | Setup, scripts, ports, test workflow    | Root `README.md`, `apps/api/README.md`, or `CONTRIBUTING.md` |
 | Frontend commands or routes             | The corresponding app README                                 |
 
@@ -54,6 +58,13 @@ Update the relevant document in the same change that modifies behavior:
 - ChartDB represents tables, columns, and foreign-key relationships, but may omit partial unique indexes and `CHECK` constraints. The README and `schema.sql` remain authoritative for those.
 
 The regeneration procedure is in [`db/README.md`](./db/README.md#maintaining-schemajson-chartdb).
+
+### Design documents
+
+- `docs/design/` holds plans for work that is not implemented yet. Each file must start with a status banner and a last-updated date.
+- A design document may describe future tables, endpoints, and workflows, but it is not the schema or API reference.
+- When the work ships, move the authoritative details to `docs/db/README.md` and `docs/api/README.md`, mark the related ADRs `Accepted`, and update or remove the plan.
+- Do not present planned behavior as current behavior in other documents.
 
 ### ADRs
 
@@ -94,4 +105,4 @@ There is no documentation linter or CI. Before committing:
 
 ---
 
-Made by [armandx06](https://github.com/armandx06) at November 3, 2026.
+Made by [armandx06](https://github.com/armandx06) at November 5, 2026.

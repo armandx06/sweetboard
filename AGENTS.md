@@ -44,6 +44,7 @@
 
 - `docs/db/README.md`, `docs/db/schema.sql`, and `docs/db/schema.json` document the implemented schema. `schema.sql` is a `pg_dump --schema-only` snapshot, and `schema.json` is a native ChartDB export that must not be hand-edited. ChartDB may omit partial unique indexes and `CHECK` constraints; the README and `schema.sql` are authoritative for those. Document only implemented and tested tables (ADR 0005, ADR 0006).
 - `docs/api/README.md` is the HTTP reference; update it when routes, payloads, status codes, or error behavior change.
+- `docs/design/` holds plans that are not implemented. Do not treat planned tables, endpoints, or rules as current behavior.
 - Architectural decisions live in `docs/adr/` (index and template included); read the relevant ADR before changing schema or domain behavior.
 - `docs/README.md` is the documentation index. `CONTRIBUTING.md` covers branching, commits, verification, migrations, and pull requests.
 
