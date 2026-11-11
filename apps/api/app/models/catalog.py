@@ -22,6 +22,10 @@ class Unit(Base, UUIDMixin):
     factor_to_base: Mapped[Decimal] = mapped_column(Numeric(18, 6))
     is_base: Mapped[bool] = mapped_column()
 
+    products: Mapped[list["Product"]] = relationship(
+        "Product", back_populates="base_unit"
+    )
+
     __table_args__ = (
         CheckConstraint(
             "dimension IN ('mass', 'volume', 'count', 'time', 'temperature', 'length')",
@@ -43,6 +47,10 @@ class Category(Base, UUIDMixin, TimestampMixin):
 
     name: Mapped[str] = mapped_column(unique=True)
     description: Mapped[str | None] = mapped_column()
+
+    products: Mapped[list["Product"]] = relationship(
+        "Product", back_populates="category"
+    )
 
 
 class Location(Base, UUIDMixin, TimestampMixin):
@@ -97,8 +105,10 @@ class Product(Base, UUIDMixin, TimestampMixin):
     activated_at: Mapped[date | None] = mapped_column()
     deactivated_at: Mapped[date | None] = mapped_column()
 
-    category: Mapped["Category | None"] = relationship()
-    base_unit: Mapped["Unit"] = relationship()
+    category: Mapped["Category | None"] = relationship(
+        "Category", back_populates="products"
+    )
+    base_unit: Mapped["Unit"] = relationship("Unit", back_populates="products")
 
     __table_args__ = (
         CheckConstraint("minimum_stock >= 0", "minimum_stock_non_negative"),
