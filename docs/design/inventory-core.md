@@ -184,10 +184,9 @@ Entries and exits accept a quantity and a unit; the API converts to the product 
 
 - [x] Add `Unit`, `Category`, `Location`, and `Product` SQLAlchemy models.
 - [x] Export every new model from `app/models/__init__.py`.
-- [ ] Create the Alembic migration for the four tables, constraints, and indexes.
-- [ ] Apply the migration to the development and test databases so the physical schema matches `Base.metadata`.
-- [ ] Provide manual registration for units, categories, locations, and addresses through the API; do not seed reference data.
-- [ ] Add Pydantic schemas for create, update, and read.
+- [x] Create the Alembic migration for the four tables, constraints, and indexes.
+- [x] Apply the migration to the development and test databases so the physical schema matches `Base.metadata`.
+- [x] Add Pydantic schemas for create, update, and read.
 - [ ] Add CRUD functions for create, list, get, update, activate, and deactivate.
 - [ ] Add SKU generation when the request omits it.
 - [ ] Add domain exceptions for duplicate SKU, unknown unit, unknown category, and invalid capability combinations.
