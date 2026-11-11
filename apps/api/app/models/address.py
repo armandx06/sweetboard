@@ -10,6 +10,7 @@ from app.models.base import Base
 from app.models.mixins import TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
+    from app.models.catalog import Location
     from app.models.customer import Customer
     from app.models.employee import Employee
     from app.models.supplier import Supplier
@@ -39,6 +40,7 @@ class Address(Base, UUIDMixin, TimestampMixin):
     supplier_addresses: Mapped[list["SupplierAddress"]] = relationship(
         back_populates="address"
     )
+    locations: Mapped[list["Location"]] = relationship(back_populates="address")
 
 
 class CustomerAddress(Base):
