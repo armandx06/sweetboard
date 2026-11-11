@@ -40,7 +40,9 @@ class Address(Base, UUIDMixin, TimestampMixin):
     supplier_addresses: Mapped[list["SupplierAddress"]] = relationship(
         back_populates="address"
     )
-    locations: Mapped[list["Location"]] = relationship(back_populates="address")
+    locations: Mapped[list["Location"]] = relationship(
+        "Location", back_populates="address"
+    )
 
 
 class CustomerAddress(Base):

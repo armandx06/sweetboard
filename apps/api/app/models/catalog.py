@@ -65,7 +65,7 @@ class Location(Base, UUIDMixin, TimestampMixin):
     activated_at: Mapped[date | None] = mapped_column()
     deactivated_at: Mapped[date | None] = mapped_column()
 
-    address: Mapped["Address"] = relationship(back_populates="locations")
+    address: Mapped["Address"] = relationship("Address", back_populates="locations")
 
     __table_args__ = (
         Index(
