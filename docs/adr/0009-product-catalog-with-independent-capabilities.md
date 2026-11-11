@@ -81,7 +81,9 @@ products
 ├── minimum_stock      numeric, default 0
 ├── target_stock       numeric, nullable
 ├── shelf_life_days    integer, nullable
-├── active             boolean, default true
+├── active             boolean, default false
+├── activated_at       date, nullable
+├── deactivated_at     date, nullable
 ├── created_at         timestamptz
 └── updated_at         timestamptz
 ```
@@ -95,7 +97,8 @@ Rules:
 - If `track_inventory` is false, `minimum_stock` must be zero and `target_stock` must be null.
 - `sku` is unique. It may be entered manually; when omitted, the API generates a sequential value such as `SKU-000001`.
 - Products are deactivated with `active = false`, not deleted, once they have inventory history.
-- `active` defaults to true in the current model. Authorization is not implemented yet; a future authentication and roles layer will decide who may activate or deactivate catalog records.
+- `active` defaults to false, so a newly created product must be activated explicitly. Activation sets `activated_at`; deactivation sets `deactivated_at`.
+- Authorization is not implemented yet; a future authentication and roles layer will decide who may activate or deactivate catalog records.
 
 ### Units
 

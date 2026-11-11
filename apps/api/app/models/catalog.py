@@ -93,7 +93,7 @@ class Product(Base, UUIDMixin, TimestampMixin):
     target_stock: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     shelf_life_days: Mapped[int | None] = mapped_column()
 
-    active: Mapped[bool] = mapped_column(default=True)
+    active: Mapped[bool] = mapped_column(default=False)
     activated_at: Mapped[date | None] = mapped_column()
     deactivated_at: Mapped[date | None] = mapped_column()
 

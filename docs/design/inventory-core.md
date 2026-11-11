@@ -26,7 +26,7 @@ Purchases, recipes, production, sales, price lists, and fiscal handling are deli
 | Locations             | One location to start, registered manually with one address and marked default; no seed          |
 | Units                 | Base units `g`, `ml`, `piece`; dimensions include mass, volume, count, time, temperature, length |
 | Reference data        | No seed; units, categories, locations, and addresses are registered through the API              |
-| Activation            | Locations start inactive; products start active; role-based activation is a future iteration     |
+| Activation            | Locations and products start inactive; role-based activation is a future iteration               |
 | Sellable products     | One SKU per sellable product                                                                     |
 | Purchases             | Full receipt per purchase; partial receipts are out of scope                                     |
 | Price lists           | Public, consignment, and cash; implemented in the sales iteration                                |
@@ -49,7 +49,7 @@ Purchases, recipes, production, sales, price lists, and fiscal handling are deli
 - WAC calculation and historical after-state on every movement.
 - FEFO consumption for exits.
 - Lot expiry alerts, low-stock alerts, and negative-stock alerts.
-- Catalog create, read, update, and deactivate endpoints.
+- Catalog create, read, update, activate, and deactivate endpoints.
 - Inventory read endpoints.
 - Tests and documentation for all of the above.
 
@@ -73,7 +73,7 @@ Registration order matters because of the required foreign keys:
 2. `locations` — register the first location, assign or create its address, and set `active = true` and `is_default = true`.
 3. `units` — a product requires a base unit.
 4. `categories` — optional for a product.
-5. `products` — requires `base_unit_id` and at least one capability.
+5. `products` — requires `base_unit_id` and at least one capability. The product is created inactive and must be activated explicitly.
 
 ### Units
 
@@ -150,7 +150,7 @@ Detailed fields, constraints, and formulas are in the ADRs. Do not duplicate the
 | `POST`  | `/products`                | Create a product                                            |
 | `GET`   | `/products`                | List products with capability, category, and status filters |
 | `GET`   | `/products/{product_id}`   | Product detail                                              |
-| `PATCH` | `/products/{product_id}`   | Update or deactivate a product                              |
+| `PATCH` | `/products/{product_id}`   | Update, activate, or deactivate a product                   |
 | `POST`  | `/units`                   | Create a unit                                               |
 | `GET`   | `/units`                   | List units                                                  |
 | `POST`  | `/categories`              | Create a category                                           |
@@ -159,7 +159,7 @@ Detailed fields, constraints, and formulas are in the ADRs. Do not duplicate the
 | `GET`   | `/locations`               | List locations with active and default filters              |
 | `PATCH` | `/locations/{location_id}` | Activate, deactivate, set default, or change the address    |
 
-Products are deactivated with `PATCH`, never hard-deleted once they have inventory history.
+New products are created inactive and activated with `PATCH`. Products are deactivated with `PATCH`, never hard-deleted once they have inventory history.
 
 `POST /locations` creates the `addresses` row and the location in one transaction, or accepts an existing `address_id` to share an address between locations. `PATCH /locations/{location_id}` repoints `address_id`, activates or deactivates the location, or changes which location is the default. A unit referenced by a product is immutable in `code`, `dimension`, and `factor_to_base`; create a new unit instead of editing it.
 
@@ -188,11 +188,11 @@ Entries and exits accept a quantity and a unit; the API converts to the product 
 - [ ] Apply the migration to the development and test databases so the physical schema matches `Base.metadata`.
 - [ ] Provide manual registration for units, categories, locations, and addresses through the API; do not seed reference data.
 - [ ] Add Pydantic schemas for create, update, and read.
-- [ ] Add CRUD functions for create, list, get, update, and deactivate.
+- [ ] Add CRUD functions for create, list, get, update, activate, and deactivate.
 - [ ] Add SKU generation when the request omits it.
 - [ ] Add domain exceptions for duplicate SKU, unknown unit, unknown category, and invalid capability combinations.
 - [ ] Add routers for `/products`, `/units`, `/categories`, and `/locations`.
-- [ ] Add tests for product creation, capability validation, SKU generation, deactivation, unit/category/location registration, and location activation and default rules.
+- [ ] Add tests for product creation, capability validation, SKU generation, activation, deactivation, unit/category/location registration, and location activation and default rules.
 - [ ] Verify `alembic check` reports no pending operations.
 
 ### PR 2 — Ledger and cost engine
@@ -235,6 +235,7 @@ Entries and exits accept a quantity and a unit; the API converts to the product 
 ## Acceptance criteria
 
 - [ ] A product can be created with any valid combination of capabilities.
+- [ ] A newly created product is inactive until it is activated.
 - [ ] A service product (`track_inventory = false`) cannot receive stock.
 - [ ] A location can be registered with an address, activated, and marked default.
 - [ ] Two locations can share one address, and deleting an address in use is rejected.
@@ -269,6 +270,7 @@ Entries and exits accept a quantity and a unit; the API converts to the product 
 | Lots        | Write-off limited to remaining quantity                                         | Integration |
 | Catalog     | Capability validation and SKU generation                                        | Integration |
 | Catalog     | Deactivation keeps history                                                      | Integration |
+| Catalog     | Product starts inactive and activation is explicit                              | Integration |
 | Catalog     | Unit, category, and location registration                                       | Integration |
 | Catalog     | Location activation and single default                                          | Integration |
 | Catalog     | Shared location address and `RESTRICT` on delete                                | Integration |
