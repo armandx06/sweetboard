@@ -54,7 +54,28 @@ inventory_movements
 stock_balances
 ```
 
-`locations` starts with a single default row, `Principal`. Lots, movements, and balances reference it.
+### Locations
+
+A location is a physical place that holds stock. The first iteration operates with one, but the table exists from the start so that a second location does not require changing every inventory table.
+
+```text
+locations
+├── id             uuid primary key
+├── name           varchar, unique, required
+├── address_id     uuid, required, references addresses
+├── is_default     boolean, default false
+├── active         boolean, default false
+├── activated_at   date, nullable
+├── deactivated_at date, nullable
+├── created_at     timestamptz
+└── updated_at     timestamptz
+```
+
+- `address_id` is a direct, non-null foreign key with `ON DELETE RESTRICT`. A location has exactly one address; there is no `location_addresses` link table. Multiple locations may share the same address. The rationale is in the [ADR 0008 amendment](./0008-shared-addresses-with-per-role-link-tables.md#location-addresses-use-a-direct-foreign-key-november-11-2026).
+- At most one location has `is_default = true`, enforced by a partial unique index.
+- `active` defaults to false, so a newly registered location must be activated explicitly. This supports the planned administrative approval flow; authorization is not implemented yet.
+- A location is deactivated, not deleted, once lots, movements, or balances reference it.
+- There is no seed data. An administrator registers the first location (for example, `Principal`), assigns its address, and sets `is_default = true` and `active = true`. Lots, movements, and balances reference that row.
 
 ### Lot identity
 
@@ -158,6 +179,8 @@ stock_balances
 
 Primary key: `(product_id, location_id)`. WAC is maintained per product and location. With one location this is equivalent to a single average per product; if more locations are added, transfers will move cost between them.
 
+`last_cost` belongs here, per product and location. It is not stored on `products`, because a single product-level cost would be ambiguous as soon as a second location exists.
+
 `stock_balances` is a cache. It can be rebuilt from `inventory_movements`.
 
 ### Costing policy
@@ -260,6 +283,8 @@ The first iteration only reports low stock. Purchase lists grouped by supplier a
 ## Notes
 
 - The product catalog is defined in [ADR 0009](./0009-product-catalog-with-independent-capabilities.md).
+- Location addresses follow the [ADR 0008 amendment](./0008-shared-addresses-with-per-role-link-tables.md#location-addresses-use-a-direct-foreign-key-november-11-2026): a direct `locations.address_id` foreign key, not a link table.
+- No reference data is seeded. Units, categories, locations, and addresses are registered through the API.
 - The implementation plan is in [`docs/design/inventory-core.md`](../design/inventory-core.md).
 - Purchases, recipes, production, sales, price lists, and fiscal handling are out of scope for the first iteration.
 - This ADR is `Proposed` until the ledger and its tests are implemented.

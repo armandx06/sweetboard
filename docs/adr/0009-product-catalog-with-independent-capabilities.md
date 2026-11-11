@@ -95,8 +95,30 @@ Rules:
 - If `track_inventory` is false, `minimum_stock` must be zero and `target_stock` must be null.
 - `sku` is unique. It may be entered manually; when omitted, the API generates a sequential value such as `SKU-000001`.
 - Products are deactivated with `active = false`, not deleted, once they have inventory history.
+- `active` defaults to true in the current model. Authorization is not implemented yet; a future authentication and roles layer will decide who may activate or deactivate catalog records.
 
-Categories are grouping and reporting labels only. They do not determine capabilities. The initial seed is:
+### Units
+
+Products reference a base unit. The `units` table is shared by inventory, recipes, and future production planning:
+
+```text
+units
+├── id               uuid primary key
+├── code             varchar, unique, required
+├── name             varchar, unique, required
+├── dimension        mass | volume | count | time | temperature | length
+├── factor_to_base   numeric, greater than zero
+└── is_base          boolean
+```
+
+- `id` is the technical key used by foreign keys such as `products.base_unit_id`; `code` is the human-readable, stable key used in the UI, imports, and reports.
+- Exactly one unit per dimension has `is_base = true`, enforced by a partial unique index.
+- A base unit has `factor_to_base = 1`; every other unit in the dimension converts to the base by multiplying by its factor.
+- A unit referenced by a product must not change its `code`, `dimension`, or `factor_to_base`; create a new unit instead. Changing the factor would retroactively alter every quantity already recorded in that unit.
+- `mass`, `volume`, and `count` cover inventory quantities. `time`, `length`, and `temperature` are reserved for recipe steps and production planning, where baking time, pan size, and oven temperature matter as much as the ingredient list.
+- Conversion is multiplicative. Temperature is an affine scale, so the first iteration stores a canonical temperature unit and does not convert between Celsius and Fahrenheit; if imperial or bilingual output is added later, the model will need an `offset_to_base` column.
+
+Categories are grouping and reporting labels only. They do not determine capabilities, and a category may be created without a description. The planned starting set is:
 
 ```text
 Panadería Dulce
@@ -112,6 +134,8 @@ Empaques y Desechables
 Insumos de Producción
 Servicios y Envíos
 ```
+
+Units, categories, and products are registered through the API by an administrator. There is no seed migration: the system starts with an empty catalog, and tests create their own fixtures from payloads.
 
 The API exposes filters for each capability so that purchases, recipes, production, and sales can request only the products they need.
 

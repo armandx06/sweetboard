@@ -15,7 +15,7 @@ ADRs are records of decisions, not tutorials. Current setup instructions live in
 | [0005](./0005-single-source-of-truth-for-database-schema-documentation.md)              | Keep one canonical schema snapshot in `docs/db/`                | Accepted | 2026-09-08 |                              |
 | [0006](./0006-incremental-table-by-table-modeling-instead-of-full-upfront-er-design.md) | Model and implement one table group at a time                   | Accepted | 2026-09-18 | Amends ADR 0004              |
 | [0007](./0007-employee-identity-credentials-and-lifecycle.md)                           | Server-generated employee credentials and soft-delete lifecycle | Accepted | 2026-09-27 | Amended 2026-11-03           |
-| [0008](./0008-shared-addresses-with-per-role-link-tables.md)                            | Share physical addresses and keep role flags in link tables     | Accepted | 2026-10-18 | Amended 2026-11-03           |
+| [0008](./0008-shared-addresses-with-per-role-link-tables.md)                            | Share physical addresses and keep role flags in link tables     | Accepted | 2026-10-18 | Amended 2026-11-11           |
 | [0009](./0009-product-catalog-with-independent-capabilities.md)                         | Model one product catalog with independent capability flags     | Proposed | 2026-11-05 | Inventory core               |
 | [0010](./0010-inventory-ledger-lots-and-moving-weighted-average-cost.md)                | Use an inventory ledger with lots and moving average cost       | Proposed | 2026-11-05 | Inventory core               |
 

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** October 18, 2026
-- **Amended:** November 3, 2026
+- **Amended:** November 11, 2026
 - **Author:** [armandx06](https://github.com/armandx06)
 
 ---
@@ -27,7 +27,7 @@ Employee, Customer, and Supplier are already implemented as independent tables s
 
 ## Decision
 
-Addresses are modeled as a many-to-many relationship between each role and a shared `addresses` table:
+Addresses are modeled as a many-to-many relationship between each role that can hold several addresses and a shared `addresses` table. Locations, which have exactly one address, use a direct foreign key instead; see [Location addresses use a direct foreign key](#location-addresses-use-a-direct-foreign-key-november-11-2026).
 
 ```sql
 addresses(
@@ -49,7 +49,7 @@ supplier_addresses  (supplier_id, address_id, is_default, is_billing, active, ac
 employee_addresses  (employee_id, address_id, is_default, active, activated_at, deactivated_at)
 ```
 
-1. **`addresses` describes only a physical location.** It has no owner column and no flag that depends on who uses it.
+1. **`addresses` describes only a physical place.** It has no owner column and no flag that depends on who uses it. This is unrelated to the inventory `locations` table described below.
 2. **One link table per role** (`customer_addresses`, `supplier_addresses`, `employee_addresses`). Each link table has real foreign keys to its role table and to `addresses`, so integrity is enforced by the database.
 3. **Relationship attributes live in the link tables, not in `addresses`.** `is_default` and `is_billing`, which the earlier customer-only design placed on `addresses`, describe how a particular subject uses an address, so they move to the link tables. Which attributes each link table carries is decided when that table is implemented; customers and suppliers keep both, while employee addresses intentionally omit `is_billing` (migration `e423c02db1c6`).
 4. **Composite primary key `(subject_id, address_id)`** on each link table, with no surrogate id. This prevents linking the same address twice to the same subject.
@@ -72,6 +72,33 @@ employee_addresses  (employee_id, address_id, is_default, active, activated_at, 
 
 All three link tables, their lifecycle fields, and their CRUD endpoints are implemented and tested. The employee billing flag was removed by migration `e423c02db1c6`, and the lifecycle fields were added by `c4f8a1d2b6e3`.
 
+### Location addresses use a direct foreign key (November 11, 2026)
+
+Locations are deliberately excluded from the link-table pattern. A location is a physical place that holds stock, so it has exactly one address and needs none of the per-link attributes that justify the role tables:
+
+```sql
+locations(
+    id,
+    name,
+    address_id,        -- not null, references addresses (id) on delete restrict
+    is_default,
+    active,
+    activated_at,
+    deactivated_at,
+    created_at,
+    updated_at
+)
+```
+
+1. **`locations.address_id` is a direct, non-null foreign key.** There is no `location_addresses` table.
+2. **`ON DELETE RESTRICT`**: an address referenced by a location cannot be deleted. This extends the protection that link tables already provide for customers, suppliers, and employees.
+3. **An index on `address_id`.** PostgreSQL does not index foreign keys automatically; the index supports both the `RESTRICT` check and lookups of every location that shares an address.
+4. **Addresses remain ownerless and shareable.** Multiple locations may reference the same `addresses` row; `address_id` is not unique. Sharing an address does not imply that the locations are the same entity.
+5. **Location lifecycle lives on `locations`.** `is_default`, `active`, `activated_at`, and `deactivated_at` describe the location, not its use of an address, so they do not belong in a link table.
+6. **At most one default location**, enforced by a partial unique index on `is_default` where `is_default = true`, mirroring the one-default rule for the role link tables.
+
+This exception holds while the cardinality stays at exactly one address per location. If a location ever needs separate delivery and billing addresses, or a history of previous addresses, the decision must be revisited with a link table similar to the role tables. The `addresses` row itself would not change.
+
 ## Consequences
 
 ### Positive
@@ -89,7 +116,13 @@ All three link tables, their lifecycle fields, and their CRUD endpoints are impl
 - Unlinking an address can leave an orphan row in `addresses`; a cleanup policy is deferred until it becomes a real problem.
 - Changing a subject's default address requires unsetting the previous default and setting the new one in the same transaction, because of the partial unique index.
 - Reading "the addresses of customer X" requires a join through the link table.
+- Locations are the exception: they use a direct `address_id` foreign key instead of a link table. This keeps the model simpler, but a future need for multiple addresses per location requires a migration to a link table.
+
+## Amendments
+
+- **November 3, 2026:** Address link tables gained `active`, `activated_at`, and `deactivated_at` (migration `c4f8a1d2b6e3`), and employee links dropped `is_billing` (migration `e423c02db1c6`). See [Address link lifecycle and API semantics](#address-link-lifecycle-and-api-semantics).
+- **November 11, 2026:** Locations were added to the address model as a direct `locations.address_id` foreign key rather than a `location_addresses` link table. A location has exactly one address and no per-link flags, so the many-to-many pattern does not apply. The `addresses` table remains ownerless, and `ON DELETE RESTRICT` protects an address that any location uses. See [Location addresses use a direct foreign key](#location-addresses-use-a-direct-foreign-key-november-11-2026).
 
 ---
 
-Made by [armandx06](https://github.com/armandx06) at October 18, 2026
+Made by [armandx06](https://github.com/armandx06) at October 18, 2026. Amended November 11, 2026.

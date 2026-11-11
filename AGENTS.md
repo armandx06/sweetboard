@@ -38,6 +38,7 @@
 - `AsyncSession` does not lazy-load relationships (ADR 0002). Eager-load any relationship used in a response with `selectinload`/`joinedload`; otherwise serialization raises `MissingGreenlet`.
 - Models inherit `app.models.base.Base` (constraint naming convention) plus `UUIDMixin`/`TimestampMixin`/`PersonMixin`; use `Mapped`/`mapped_column`. Because `app/models/__init__.py` eagerly imports every model (and Alembic imports it), runtime imports between model modules create circular imports; use string forward references (`Mapped["X"]`) for cross-model relationships.
 - Addresses are shared: `addresses` has no owner column; per-role link tables (`customer_addresses`, `supplier_addresses`, `employee_addresses`) hold role flags and a partial unique index enforcing one default per subject (ADR 0008). Do not add owner columns to `addresses`.
+- Locations are the exception to that pattern: a location has exactly one address, so `locations.address_id` is a direct NOT NULL foreign key with `ON DELETE RESTRICT`. There is no `location_addresses` table, and location lifecycle (`is_default`, `active`, `activated_at`, `deactivated_at`) lives on `locations`. Multiple locations may share an address (ADR 0008 amendment).
 - Employee rules are deliberate (ADR 0007): usernames/passwords are server-generated, plaintext passwords appear only in create/reset responses, `PATCH` is limited to contact fields, and deactivation is the soft delete. Hard `DELETE` is intended only for never-hired records, but that guard is not implemented yet.
 
 ## Documentation
